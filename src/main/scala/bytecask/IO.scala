@@ -57,27 +57,27 @@ object IO {
 
   def readEntry(reader: RandomAccessFile, entry: IndexEntry) = {
     reader.seek(entry.pos)
-    // println("!!! pointer: " + reader.getFilePointer)
+    // println("pointer: " + reader.getFilePointer)
     val buffer = new Array[Byte](entry.length)
     val read = reader.read(buffer)
     if (read < entry.length) throw new IOException("Could not read all data: %s/%s".format(read, entry.length))
     val expectedCrc = readUInt32(buffer(0), buffer(1), buffer(2), buffer(3))
-    // println("!!! crc: " + expectedCrc)
+    // println("crc: " + expectedCrc)
     val crc = new CRC32
     crc.update(buffer, 4, entry.length - 4)
     val actualCrc = crc.getValue.toInt
-    //println("!!! acrc: " + actualCrc)
+    //println("acrc: " + actualCrc)
     if (expectedCrc != actualCrc) throw new IOException("CRC check failed: %s != %s".format(expectedCrc, actualCrc))
     val timestamp = readUInt32(buffer(4), buffer(5), buffer(6), buffer(7))
     val keySize = readUInt16(buffer(8), buffer(9))
-    //println("!!! ks: " + keySize)
+    //println("ks: " + keySize)
     val valueSize = readUInt32(buffer(10), buffer(11), buffer(12), buffer(13))
-    //println("!!! vs: " + valueSize)
+    //println("vs: " + valueSize)
     val key = new Array[Byte](keySize)
     Array.copy(buffer, IO.HEADER_SIZE, key, 0, keySize)
     val value = new Array[Byte](valueSize)
     Array.copy(buffer, IO.HEADER_SIZE + keySize, value, 0, valueSize)
-    //println("!!! v: " + value.toList)
+    //println("v: " + value.toList)
     FileEntry(entry.pos, actualCrc, keySize, valueSize, timestamp, key, value)
   }
 
@@ -182,7 +182,7 @@ final class IO(val dir: String) extends Closeable with Logging {
   private def createAppender() = new RandomAccessFile(activeFile, "rw")
 
   def split() = {
-    info("Splitting")
+    //debug("Splitting...")
     appender.close()
     val next = nextFile()
     activeFile.mkFile.renameTo(next)

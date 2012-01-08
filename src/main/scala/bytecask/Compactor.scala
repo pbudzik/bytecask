@@ -59,7 +59,7 @@ class Compactor(io: IO, index: Index) extends Logging {
         val tmp = temporaryFor(file)
         val appender = new RandomAccessFile(tmp, "rw")
         IO.readEntries(dbFile(file), (file: File, entry: FileEntry) => {
-          debug("entry: " + entry)
+          //debug("entry: " + entry)
           if (entry.valueSize > 0 && index.hasEntry(entry)) {
             val (pos, length, timestamp) = IO.appendEntry(appender, entry.key, entry.value)
             subIndex.put(entry.key, IndexEntry(file.getName, pos, length, timestamp))
@@ -68,7 +68,7 @@ class Compactor(io: IO, index: Index) extends Logging {
         appender.close()
         if (!subIndex.isEmpty)
           index.synchronized {
-            debug("Merging..." + file + " and " + tmp)
+            //debug("Merging..." + file + " and " + tmp)
             for ((k, v) <- subIndex) index.getIndex.put(k, v)
             files.foreach(changes.remove(_))
             dbFile(file).delete()

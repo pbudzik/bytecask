@@ -24,6 +24,7 @@ import bytecask.Utils._
 import management.ManagementFactory
 import javax.management.ObjectName
 import bytecask.Bytes._
+import java.util.concurrent.atomic.AtomicInteger
 
 class Bytecask(dir: String, name: String = Utils.randomString(8), maxFileSize: Long = Int.MaxValue,
                minFileSizeToCompact: Int = 1024 * 1024, dataCompactThreshold: Int = 1024 * 1024,
@@ -33,6 +34,7 @@ class Bytecask(dir: String, name: String = Utils.randomString(8), maxFileSize: L
   mkDirIfNeeded(dir)
   val io = new IO(dir)
   val index = new Index(io)
+  val splits = new AtomicInteger
   val compactor = new Compactor(io, index)
   val TOMBSTONE_VALUE = Bytes.EMPTY
 
@@ -80,12 +82,14 @@ class Bytecask(dir: String, name: String = Utils.randomString(8), maxFileSize: L
   }
 
   def stats(): String = {
-    "name: %s, dir: %s, uptime: %s, count: %s, compactions: %s".format(name, dir, now - createdAt, count(), compactor.compactions)
+    "name: %s, dir: %s, uptime: %s, count: %s, splits: %s, compactions: %s"
+      .format(name, dir, now - createdAt, count(), splits.get(), compactor.compactions)
   }
 
   def split() {
     this.synchronized {
       index.postSplit(io.split())
+      splits.incrementAndGet()
     }
   }
 

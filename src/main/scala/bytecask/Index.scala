@@ -68,7 +68,7 @@ final class Index(io: IO) extends Logging {
 
   def hasEntry(entry: FileEntry) = {
     val e = index.get(entry.key)
-    debug("hasEntry: " + e + " -> " + entry)
+    //debug("hasEntry: " + e + " -> " + entry)
     !e.isEmpty && e.get.timestamp == entry.timestamp
   }
 
