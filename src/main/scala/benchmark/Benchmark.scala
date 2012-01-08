@@ -32,14 +32,17 @@ object Benchmark {
     //val dir = mkTmpDir.getAbsolutePath
     val dir = "/media/ext/tmp/benchmark_" + now
     var db = new Bytecask(dir)
+
     warmup(db)
     routine(db)
+    println(db.stats())
     db.destroy()
 
     println("\n--- Benchmark 2 (w/ compressing)...\n")
     db = new Bytecask(dir, processor = Compressor)
     warmup(db)
     routine(db)
+    println(db.stats())
     db.destroy()
   }
 

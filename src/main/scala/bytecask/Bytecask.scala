@@ -80,11 +80,10 @@ class Bytecask(dir: String, name: String = Utils.randomString(8), maxFileSize: L
   }
 
   def stats(): String = {
-    now + "foo"
+    "name: %s, dir: %s, uptime: %s, count: %s, compactions: %s".format(name, dir, now - createdAt, count(), compactor.compactions)
   }
 
   def split() {
-    debug("split !!!!!!!!!!!!!!!!!!!!!!!")
     this.synchronized {
       index.postSplit(io.split())
     }
