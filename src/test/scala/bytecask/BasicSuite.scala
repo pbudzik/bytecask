@@ -149,11 +149,4 @@ class BasicSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
     db.close()
   }
 
-
-  override def beforeEach() {
-  }
-
-  override def afterEach() {
-  }
-
 }

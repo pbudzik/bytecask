@@ -112,4 +112,8 @@ object Utils {
   def checkArgument(condition: Boolean, message: String) {
     if (!condition) throw new IllegalArgumentException(message)
   }
+
+  def notImplementedYet() {
+    throw new RuntimeException("Not yet implemented")
+  }
 }

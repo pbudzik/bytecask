@@ -27,11 +27,16 @@ import bytecask.Utils._
 
 class CompressSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
 
-  test("comp") {
-    val c = randomString(4024).getBytes
+  test("compressing 64K") {
+    val c = randomString(1024 * 64).getBytes
     val d = uncompress(compress(c))
     Bytes(c) should be(Bytes(d))
   }
 
+  test("compressing 1 char long") {
+    val c = "1".getBytes
+    val d = uncompress(compress(c))
+    Bytes(c) should be(Bytes(d))
+  }
 
 }

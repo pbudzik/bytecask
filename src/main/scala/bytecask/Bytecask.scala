@@ -106,10 +106,12 @@ class Bytecask(dir: String, name: String = Utils.randomString(8), maxFileSize: L
     }
   }
 
-  def keys() = {
+  def keys() {
+    notImplementedYet()
   }
 
-  def values() = {
+  def values() {
+    notImplementedYet()
   }
 
   def count() = index.size

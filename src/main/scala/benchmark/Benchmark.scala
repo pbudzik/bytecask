@@ -51,36 +51,36 @@ object Benchmark {
     var n = 10000
     var length = 2048
     val bytes = randomBytes(length)
-    throughput("sequential put of different " + n + " items", n, n * length) {
+    throughput("sequential put of different %s items".format(n), n, n * length) {
       for (i <- 1 to n) db.put("key_" + i, bytes)
     }
-    throughput("sequential get of different " + n + " items", n, n * length) {
+    throughput("sequential get of different %s items".format(n), n, n * length) {
       for (i <- 1 to n) {
         db.get("key_" + i)
       }
     }
-    throughput("sequential get of random items " + n + " times", n, n * length) {
+    throughput("sequential get of random items %s times".format(n), n, n * length) {
       val random = new Random(now)
       for (i <- 1 to n) {
         db.get("key_" + random.nextInt(n))
       }
     }
-    throughput("sequential get of the same item " + n + " times", n, n * length) {
+    throughput("sequential get of the same item %s times".format(n), n, n * length) {
       for (i <- 1 to n) {
         db.get("key_" + 10)
       }
     }
     println()
     val entries = (for (i <- 1 to n) yield ("key_" + i -> bytes)).toMap
-    throughput("paralell put of different " + n + " items", n, n * length) {
+    throughput("paralell put of different %s items".format(n), n, n * length) {
       entries.par.foreach(entry => db.put(entry._1, entry._2))
     }
 
-    throughput("paralell get of the same item " + n + " times", n, n * length) {
+    throughput("paralell get of the same item %s times".format(n), n, n * length) {
       entries.par.foreach(entry => db.get("key_100"))
     }
 
-    throughput("paralell get of random " + n + " items", n, n * length) {
+    throughput("paralell get of random %s items".format(n), n, n * length) {
       entries.par.foreach(entry => db.get(entry._1))
     }
   }
