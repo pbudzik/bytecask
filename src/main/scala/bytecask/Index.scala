@@ -25,6 +25,10 @@ import java.io.File
 
 import bytecask.Utils._
 
+/*
+Index (aka Keydir) with pointers to files; has position and length of entry
+ */
+
 final class Index(io: IO) extends Logging {
 
   private val index = Map[Bytes, IndexEntry]()

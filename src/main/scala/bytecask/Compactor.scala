@@ -26,6 +26,10 @@ import java.io.{RandomAccessFile, File}
 
 case class Delta(entries: Int, length: Int)
 
+/*
+Compacts inactive files to save space. TODO: merging small files
+ */
+
 class Compactor(io: IO, index: Index) extends Logging {
   val compactions = new AtomicInteger
   val lastCompaction = new AtomicLong
@@ -68,7 +72,7 @@ class Compactor(io: IO, index: Index) extends Logging {
         appender.close()
         if (!subIndex.isEmpty)
           index.synchronized {
-            //debug("Merging..." + file + " and " + tmp)
+            //debug("Merging indices..." + file + " and " + tmp)
             for ((k, v) <- subIndex) index.getIndex.put(k, v)
             files.foreach(changes.remove(_))
             dbFile(file).delete()

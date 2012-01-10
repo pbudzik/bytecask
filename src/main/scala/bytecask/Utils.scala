@@ -20,17 +20,10 @@
 
 package bytecask
 
-import java.util.zip.CRC32
 import java.io.File
-import java.util.UUID
 import org.xerial.snappy.Snappy
 
 object Utils {
-  def crc32(bytes: Bytes) = {
-    val crc = new CRC32
-    crc.update(bytes.bytes)
-    crc.getValue
-  }
 
   @inline
   def now = System.currentTimeMillis()
@@ -40,8 +33,6 @@ object Utils {
     file.mkdirs()
     file
   }
-
-  def createId = UUID.randomUUID().toString
 
   def collToString(col: Iterable[Any]) = {
     "[" + col.mkString(",") + "]"
@@ -98,7 +89,7 @@ object Utils {
     val result = f
     val time = now - t0
     println("**** '%s': time: %s ms, throughput: %s TPS at %3.2f MB/s".format(name, time, ((n * 1000) / time), (1000.0 * ((length / (1024.0 * 1024.0) / time)))))
-    f
+    result
   }
 
   @inline

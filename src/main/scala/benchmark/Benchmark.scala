@@ -45,7 +45,6 @@ object Benchmark {
     db.destroy()
   }
 
-
   def b2() {
     println("\n--- Benchmark 2 (w/ compressing)...\n")
     val dir = "/media/ext/tmp/benchmark_" + now
@@ -140,7 +139,7 @@ object Benchmark {
 
   private def warmup(db: Bytecask) {
     val bytes = randomBytes(1024)
-    for (i <- 1 to 100) db.put("test_key" + i, bytes)
-    for (i <- 1 to 100) db.get("test_key" + i)
+    for (i <- 1 to 1000) db.put("test_key" + i, bytes)
+    for (i <- 1 to 1000) db.get("test_key" + i)
   }
 }
