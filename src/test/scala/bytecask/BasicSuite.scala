@@ -25,11 +25,12 @@ import org.scalatest.{BeforeAndAfterEach, FunSuite}
 
 import bytecask.Utils._
 import bytecask.Bytes._
+import bytecask.Files._
 
 class BasicSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
 
   test("basic ops") {
-    val db = new Bytecask(mkTmpDir.getAbsolutePath)
+    val db = new Bytecask(mkTmpDir)
     db.put("foo", "bar")
     db.put("baz", "boo")
     string(db.get("foo").get) should be("bar")
@@ -40,7 +41,7 @@ class BasicSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
   }
 
   test("bulk seq put and get") {
-    val db = new Bytecask(mkTmpDir.getAbsolutePath)
+    val db = new Bytecask(mkTmpDir)
     val length = 2048
     val bytes = randomBytes(length)
     val n = 1000
@@ -57,7 +58,7 @@ class BasicSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
   }
 
   test("bulk par put and get") {
-    val db = new Bytecask(mkTmpDir.getAbsolutePath)
+    val db = new Bytecask(mkTmpDir)
     val length = 2048
     val bytes = randomBytes(length)
     val n = 1000
@@ -81,7 +82,7 @@ class BasicSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
   }
 
   test("index rebuild") {
-    val dir = mkTmpDir.getAbsolutePath
+    val dir = mkTmpDir
     var db = new Bytecask(dir)
     db.put("foo", "bar")
     db.put("baz", "tar")
@@ -97,7 +98,7 @@ class BasicSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
   }
 
   test("split") {
-    val dir = mkTmpDir.getAbsolutePath
+    val dir = mkTmpDir
     var db = new Bytecask(dir, maxFileSize = 1024)
     db.put("foo", randomBytes(4096))
 
@@ -131,8 +132,7 @@ class BasicSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
   }
 
   test("compaction") {
-    val dir = mkTmpDir.getAbsolutePath
-    val db = new Bytecask(dir, maxFileSize = 1024, minFileSizeToCompact = 1, dataCompactThreshold = 100)
+    val db = new Bytecask(mkTmpDir, maxFileSize = 1024, minFileSizeToCompact = 1, dataCompactThreshold = 100)
     db.put("foo4", randomBytes(128))
     db.put("foo5", randomBytes(128))
     db.put("foo1", randomBytes(4096))
@@ -142,9 +142,9 @@ class BasicSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
     db.delete("foo3")
     db.delete("foo4")
     db.delete("foo5")
-    val s0 = dirSize(dir)
+    val s0 = dirSize(db.dir)
     db.compactCheck()
-    val s1 = dirSize(dir)
+    val s1 = dirSize(db.dir)
     println("sizes: " + s0 + " " + s1)
     db.close()
   }

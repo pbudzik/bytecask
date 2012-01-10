@@ -68,7 +68,7 @@ object Utils {
    * File path DSL - instead of + "/" + ... all the parts are glued by / being a separator
    */
 
-  sealed class DslIfiedString(s: String) {
+  final class DslIfiedString(s: String) {
     def mkFile = new File(s)
 
     def /(p: String) = {
@@ -107,4 +107,8 @@ object Utils {
   def notImplementedYet() {
     throw new RuntimeException("Not yet implemented")
   }
+}
+
+object Files {
+  implicit def fileToString(file: File) = file.getAbsolutePath
 }

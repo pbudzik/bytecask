@@ -26,7 +26,7 @@ import javax.management.ObjectName
 import bytecask.Bytes._
 import java.util.concurrent.atomic.AtomicInteger
 
-class Bytecask(dir: String, name: String = Utils.randomString(8), maxFileSize: Long = Int.MaxValue,
+class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSize: Long = Int.MaxValue,
                minFileSizeToCompact: Int = 1024 * 1024, dataCompactThreshold: Int = 1024 * 1024,
                processor: ValueProcessor = PassThru, jmx: Boolean = true)
   extends Logging {

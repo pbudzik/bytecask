@@ -25,34 +25,39 @@ import org.scalatest.{BeforeAndAfterEach, FunSuite}
 
 import bytecask.Utils._
 import bytecask.Bytes._
-import java.util.concurrent.{TimeUnit, Executors}
 
-class ConcurrentSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
+class ConcurrentSuite extends FunSuite
+with ShouldMatchers with BeforeAndAfterEach with TestSupport {
+
+  var db: Bytecask = _
 
   test("put/get") {
-    val db = new Bytecask(mkTmpDir.getAbsolutePath)
     val threads = 1000
     val iters = 100
-
-    concurrently(threads, iters, 5) {
+    concurrently(threads, iters) {
       i => db.put(i.toString, randomBytes(1024))
     }
-
-    concurrently(threads, iters, 5) {
+    concurrently(threads, iters) {
       i => assert(!db.get(i.toString).isEmpty)
     }
-
-    db.destroy()
   }
 
-  def concurrently(threads: Int, iters: Int, timeout: Int)(f: Int => Any) {
-    val pool = Executors.newFixedThreadPool(threads)
-    for (i <- 1.to(iters))
-      pool.execute(new Runnable() {
-        override def run() {
-          f
-        }
-      })
-    pool.awaitTermination(timeout, TimeUnit.SECONDS)
+  test("put/delete") {
+    val threads = 1000
+    concurrently(threads) {
+      i => db.put(i.toString, randomBytes(1024))
+    }
+    concurrently(threads) {
+      i => db.delete(i.toString)
+    }
+    db.count() should be(0)
+  }
+
+  override def beforeEach() {
+    db = new Bytecask(mkTmpDir.getAbsolutePath)
+  }
+
+  override def afterEach() {
+    db.destroy()
   }
 }
