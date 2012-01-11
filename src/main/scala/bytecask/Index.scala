@@ -38,13 +38,11 @@ final class Index(io: IO) extends Logging with Locking {
   }
 
   private def indexFile(file: File) {
-    index.synchronized {
-      IO.readEntries(file, indexEntry)
-      debug("after: " + index)
-    }
+    IO.readEntries(file, addEntry)
+    debug("after: " + index)
   }
 
-  private def indexEntry(file: File, entry: FileEntry) = {
+  private def addEntry(file: File, entry: FileEntry) = writeLock {
     index.put(entry.key, IndexEntry(file.getName, entry.pos, entry.size, entry.timestamp))
   }
 
@@ -61,7 +59,7 @@ final class Index(io: IO) extends Logging with Locking {
   }
 
   def postSplit(file: String) {
-    index.synchronized {
+    writeLock {
       for ((key, entry) <- index) {
         if (entry.isActive) {
           index.put(key, IndexEntry(file, entry.pos, entry.length, entry.timestamp))

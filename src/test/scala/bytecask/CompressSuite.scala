@@ -36,7 +36,7 @@ class CompressSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach
   test("compressing 1 char long") {
     val c = "1".getBytes
     val d = uncompress(compress(c))
-    Bytes(c) should be(Bytes(d))
+    c should be(d)
   }
 
 }

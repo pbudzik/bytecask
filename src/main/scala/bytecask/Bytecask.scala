@@ -89,8 +89,8 @@ class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSiz
   def split() {
     synchronized {
       index.postSplit(io.split())
-      splits.incrementAndGet()
     }
+    splits.incrementAndGet()
   }
 
   def compactCheck() {
