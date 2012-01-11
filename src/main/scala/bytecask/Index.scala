@@ -29,7 +29,7 @@ import bytecask.Utils._
 Index (aka Keydir) with pointers to files; has position and length of entry
  */
 
-final class Index(io: IO) extends Logging {
+final class Index(io: IO) extends Logging with Locking {
 
   private val index = Map[Bytes, IndexEntry]()
 
@@ -48,15 +48,15 @@ final class Index(io: IO) extends Logging {
     index.put(entry.key, IndexEntry(file.getName, entry.pos, entry.size, entry.timestamp))
   }
 
-  def update(key: Bytes, pos: Int, length: Int, timestamp: Int) = index.synchronized {
+  def update(key: Bytes, pos: Int, length: Int, timestamp: Int) = writeLock {
     index.put(key, IndexEntry(IO.activeFileName, pos, length, timestamp))
   }
 
-  def get(key: Bytes) = index.synchronized {
+  def get(key: Bytes) = readLock {
     index.get(key)
   }
 
-  def delete(key: Bytes) = index.synchronized {
+  def delete(key: Bytes) = writeLock {
     index.remove(key)
   }
 

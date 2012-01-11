@@ -1,5 +1,3 @@
-package bytecask
-
 /*
 * Copyright 2011 P.Budzik
 *
@@ -20,6 +18,8 @@ package bytecask
 * Time: 12:07 PM
 */
 
+package bytecask
+
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.{BeforeAndAfterEach, FunSuite}
 
@@ -31,26 +31,51 @@ with ShouldMatchers with BeforeAndAfterEach with TestSupport {
 
   var db: Bytecask = _
 
-  test("put/get") {
+  test("put/get 1K") {
     val threads = 1000
     val iters = 100
     concurrently(threads, iters) {
       i => db.put(i.toString, randomBytes(1024))
     }
     concurrently(threads, iters) {
-      i => assert(!db.get(i.toString).isEmpty)
+      i => assert(!db.get(i.toString).isEmpty, "not empty")
     }
+    db.count() should be(iters)
+  }
+
+  test("put/get 32K") {
+    val threads = 1000
+    val iters = 100
+    concurrently(threads, iters) {
+      i => db.put(i.toString, randomBytes(1024 * 32))
+    }
+    concurrently(threads, iters) {
+      i => assert(!db.get(i.toString).isEmpty, "not empty")
+    }
+    db.count() should be(iters)
   }
 
   test("put/delete") {
-    val threads = 1000
-    concurrently(threads) {
+    val threads = 100
+    val iters = 100
+    concurrently(threads, iters) {
       i => db.put(i.toString, randomBytes(1024))
     }
-    concurrently(threads) {
+    concurrently(threads, iters) {
       i => db.delete(i.toString)
     }
     db.count() should be(0)
+  }
+
+  test("mixed put/get") {
+    val threads = 1000
+    val iters = 1000
+    db.put("a", randomBytes(1024 * 64))
+    concurrently(threads, iters) {
+      i => db.put(i.toString, randomBytes(1024))
+      assert(!db.get("a").isEmpty, "not empty")
+    }
+    db.count() should be(iters + 1)
   }
 
   override def beforeEach() {
@@ -60,4 +85,5 @@ with ShouldMatchers with BeforeAndAfterEach with TestSupport {
   override def afterEach() {
     db.destroy()
   }
+
 }

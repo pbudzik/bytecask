@@ -24,6 +24,11 @@ import collection.mutable.Map
 import java.util.concurrent.atomic.{AtomicLong, AtomicInteger}
 import java.io.{RandomAccessFile, File}
 
+/*
+Represents change measure for a file, how many entries and how much data
+is to be potentially compacted
+ */
+
 case class Delta(entries: Int, length: Int)
 
 /*

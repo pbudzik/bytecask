@@ -73,7 +73,7 @@ class BasicSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
     db.count() should be(n)
 
     entries.par.foreach {
-      entry => assert(!db.get(entry._1).isEmpty)
+      entry => assert(!db.get(entry._1).isEmpty, "value is not empty")
     }
 
     db.count() should be(n)
