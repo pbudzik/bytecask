@@ -35,7 +35,7 @@ class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSiz
   val io = new IO(dir)
   val index = new Index(io)
   val splits = new AtomicInteger
-  val compactor = new Compactor(io, index)
+  lazy val compactor = new Compactor(io, index)
   val TOMBSTONE_VALUE = Bytes.EMPTY
 
   init()

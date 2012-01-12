@@ -114,10 +114,9 @@ object IO {
 
   @inline
   def readEntry(dir: String, entry: IndexEntry): FileEntry = {
-    val reader = new RandomAccessFile(dir + "/" + entry.file, "r")
-    val read = readEntry(reader, entry)
-    reader.close()
-    read
+    withResource(new RandomAccessFile(dir + "/" + entry.file, "r")) {
+      reader => readEntry(reader, entry)
+    }
   }
 
   def readEntries(file: File, callback: (File, FileEntry) => Any) {
@@ -166,10 +165,11 @@ object IO {
   }
 }
 
-final class IO(val dir: String) extends Closeable with Logging {
+final class IO(val dir: String) extends Closeable with Logging with Locking {
   val activeFile = dir + "/" + IO.activeFileName
   var appender = createAppender()
   val splits = new AtomicInteger
+  val regex = "^[0-9]+$"
 
   def appendEntry(key: Bytes, value: Bytes) = {
     IO.appendEntry(appender, key, value)
@@ -179,7 +179,9 @@ final class IO(val dir: String) extends Closeable with Logging {
     IO.readEntry(dir, entry).value
   }
 
-  private def createAppender() = new RandomAccessFile(activeFile, "rw")
+  private def createAppender() = writeLock {
+    new RandomAccessFile(activeFile, "rw")
+  }
 
   def split() = {
     //debug("Splitting...")
@@ -192,7 +194,6 @@ final class IO(val dir: String) extends Closeable with Logging {
   }
 
   private def nextFile() = {
-    val regex = "^[0-9]+$"
     val files = ls(dir).filter(f => f.isFile && f.getName.matches(regex)).map(_.getName.toInt).sortWith(_ < _)
     val next = files.last + 1
     (dir / next).mkFile

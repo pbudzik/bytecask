@@ -22,14 +22,17 @@ package bytecask
 
 import java.io.File
 import org.xerial.snappy.Snappy
+import java.util.concurrent.atomic.AtomicLong
 
 object Utils {
+
+  val counter = new AtomicLong
 
   @inline
   def now = System.currentTimeMillis()
 
   def mkTmpDir = {
-    val file = new File(System.getProperty("java.io.tmpdir") + System.getProperty("file.separator") + "_" + now)
+    val file = new File(System.getProperty("java.io.tmpdir") + File.separator + "_" + now + "_" + counter.incrementAndGet())
     file.mkdirs()
     file
   }
@@ -107,8 +110,17 @@ object Utils {
   def notImplementedYet() {
     throw new RuntimeException("Not yet implemented")
   }
+
+  def withResource[X <: {def close()}, A](resource: X)(f: X => A) = {
+    try {
+      f(resource)
+    } finally {
+      resource.close()
+    }
+  }
 }
 
 object Files {
   implicit def fileToString(file: File) = file.getAbsolutePath
 }
+
