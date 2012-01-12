@@ -84,14 +84,14 @@ object Utils {
   def time(name: String)(f: => Any) {
     val t0 = now
     f
-    println("**** '%s' time: %s ms".format(now - t0))
+    println("*** '%s' time: %s ms".format(now - t0))
   }
 
   def throughput(name: String, n: Int, length: Int)(f: => Any) {
     val t0 = now
     val result = f
     val time = now - t0
-    println("**** '%s': time: %s ms, throughput: %s TPS at %3.2f MB/s".format(name, time, ((n * 1000) / time), (1000.0 * ((length / (1024.0 * 1024.0) / time)))))
+    println("*** '%s': time: %s ms, throughput: %s TPS at %3.2f MB/s".format(name, time, ((n * 1000) / time), (1000.0 * ((length / (1024.0 * 1024.0) / time)))))
     result
   }
 

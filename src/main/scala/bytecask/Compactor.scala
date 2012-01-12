@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.{AtomicLong, AtomicInteger}
 import java.io.{RandomAccessFile, File}
 
 /*
-Represents change measure for a file, how many entries and how much data
+Represents change measure for a file - how many entries and how much data
 is to be potentially compacted
  */
 
@@ -61,7 +61,6 @@ class Compactor(io: IO, index: Index) extends Logging {
   }
 
   private def compact(files: Iterable[String]) {
-    lastCompaction.set(now)
     files.foreach {
       file =>
         val subIndex = Map[Bytes, IndexEntry]()
@@ -84,7 +83,7 @@ class Compactor(io: IO, index: Index) extends Logging {
             tmp.renameTo(dbFile(file))
           } else tmp.delete()
     }
-
+    lastCompaction.set(now)
     compactions.incrementAndGet()
   }
 

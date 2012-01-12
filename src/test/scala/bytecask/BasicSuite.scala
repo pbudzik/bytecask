@@ -103,15 +103,15 @@ class BasicSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
     db.put("foo", randomBytes(4096))
 
     db.count() should be(1)
-    println("~~~ " + ls(dir).map(_.getName).toList)
+    println("*** " + ls(dir).map(_.getName).toList)
 
     db.close()
 
     ls(dir).size should be(2)
 
     db = new Bytecask(dir, maxFileSize = 1024)
-    println("~~~ " + ls(dir).map(_.getName).toList)
-    println("~~~ " + db.index.getIndex)
+    println("*** " + ls(dir).map(_.getName).toList)
+    println("*** " + db.index.getIndex)
 
     println(db.get("foo"))
 
@@ -123,8 +123,8 @@ class BasicSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
 
     db = new Bytecask(dir, maxFileSize = 1024)
 
-    println("~~~ " + ls(dir).map(_.getName).toList)
-    println("~~~ " + db.index.getIndex)
+    println("*** " + ls(dir).map(_.getName).toList)
+    println("*** " + db.index.getIndex)
 
     println(db.get("bar"))
 

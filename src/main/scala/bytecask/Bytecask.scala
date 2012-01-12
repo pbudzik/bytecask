@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSize: Long = Int.MaxValue,
                minFileSizeToCompact: Int = 1024 * 1024, dataCompactThreshold: Int = 1024 * 1024,
-               processor: ValueProcessor = PassThru, jmx: Boolean = true)
+               processor: ValueProcessor = PassThru, autoCompaction: Boolean = false, jmx: Boolean = true)
   extends Logging {
   val createdAt = System.currentTimeMillis()
   mkDirIfNeeded(dir)
@@ -110,14 +110,6 @@ class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSiz
     }
   }
 
-  def keys() {
-    notImplementedYet()
-  }
-
-  def values() {
-    notImplementedYet()
-  }
-
   def count() = index.size
 
   override def toString = "{name=%s, dir=%s}".format(name, dir)
@@ -129,6 +121,14 @@ class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSiz
   }
 
   def selfCheck = {
+    notImplementedYet()
+  }
+
+  def keys() {
+    notImplementedYet()
+  }
+
+  def values() {
     notImplementedYet()
   }
 

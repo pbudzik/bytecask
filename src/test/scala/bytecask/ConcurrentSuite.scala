@@ -72,7 +72,7 @@ class ConcurrentSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEa
     val iters = 1000
     db.put("a", randomBytes(1024 * 64))
     concurrently(threads, iters) {
-      i => db.put(i.toString, randomBytes(1024))
+      i => db.put(randomBytes(256), randomBytes(1024))
       assert(!db.get("a").isEmpty, "not empty")
     }
     db.count() should be(iters + 1)
