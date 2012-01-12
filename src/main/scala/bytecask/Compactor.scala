@@ -90,7 +90,7 @@ class Compactor(io: IO, index: Index) extends Logging {
 
   def compactActive() {
     index.synchronized {
-      compact(List(IO.activeFileName))
+      compact(List(IO.ACTIVE_FILE_NAME))
     }
   }
 

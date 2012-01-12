@@ -31,7 +31,7 @@ object Utils {
   @inline
   def now = System.currentTimeMillis()
 
-  def mkTmpDir = {
+  def mkTempDir = {
     val file = new File(System.getProperty("java.io.tmpdir") + File.separator + "_" + now + "_" + counter.incrementAndGet())
     file.mkdirs()
     file
@@ -101,6 +101,7 @@ object Utils {
   @inline
   def uncompress(b: Bytes) = Snappy.uncompress(b)
 
+  @inline
   def processorsNum = Runtime.getRuntime.availableProcessors()
 
   def checkArgument(condition: Boolean, message: String) {

@@ -128,6 +128,10 @@ class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSiz
     server.registerMBean(new BytecaskJmx(this), beanName)
   }
 
+  def selfCheck = {
+    notImplementedYet()
+  }
+
 }
 
 trait ValueProcessor {

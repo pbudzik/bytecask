@@ -29,7 +29,8 @@ import bytecask.Utils._
 object IO {
   val HEADER_SIZE = 14 // 4 + 4 + 2 + 4 bytes
   val DEFAULT_MAX_FILE_SIZE = Int.MaxValue // 2GB
-  val activeFileName = "0"
+  val ACTIVE_FILE_NAME = "0"
+  val FILE_REGEX = "^[0-9]+$"
 
   def appendEntry(appender: RandomAccessFile, key: Bytes, value: Bytes) = appender.synchronized {
     val pos = appender.getFilePointer.toInt
@@ -166,10 +167,9 @@ object IO {
 }
 
 final class IO(val dir: String) extends Closeable with Logging with Locking {
-  val activeFile = dir + "/" + IO.activeFileName
+  val activeFile = dir + "/" + IO.ACTIVE_FILE_NAME
   var appender = createAppender()
   val splits = new AtomicInteger
-  val regex = "^[0-9]+$"
 
   def appendEntry(key: Bytes, value: Bytes) = {
     IO.appendEntry(appender, key, value)
@@ -194,7 +194,7 @@ final class IO(val dir: String) extends Closeable with Logging with Locking {
   }
 
   private def nextFile() = {
-    val files = ls(dir).filter(f => f.isFile && f.getName.matches(regex)).map(_.getName.toInt).sortWith(_ < _)
+    val files = ls(dir).filter(f => f.isFile && f.getName.matches(IO.FILE_REGEX)).map(_.getName.toInt).sortWith(_ < _)
     val next = files.last + 1
     (dir / next).mkFile
   }

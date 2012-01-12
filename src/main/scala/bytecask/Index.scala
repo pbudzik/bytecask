@@ -47,7 +47,7 @@ final class Index(io: IO) extends Logging with Locking {
   }
 
   def update(key: Bytes, pos: Int, length: Int, timestamp: Int) = writeLock {
-    index.put(key, IndexEntry(IO.activeFileName, pos, length, timestamp))
+    index.put(key, IndexEntry(IO.ACTIVE_FILE_NAME, pos, length, timestamp))
   }
 
   def get(key: Bytes) = readLock {
@@ -83,7 +83,7 @@ final class Index(io: IO) extends Logging with Locking {
 
 case class IndexEntry(file: String, pos: Int, length: Int, timestamp: Int) {
   //FIXME: reduce size as it is kept in memory
-  def isInactive = file != IO.activeFileName
+  def isInactive = file != IO.ACTIVE_FILE_NAME
 
   def isActive = !isInactive
 }

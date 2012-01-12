@@ -36,7 +36,7 @@ object Benchmark {
 
   def b1() {
     println("\n--- Benchmark 1 (w/o compressing)...\n")
-    //val dir = mkTmpDir.getAbsolutePath
+    //val dir = mkTempDir.getAbsolutePath
     val dir = "/media/ext/tmp/benchmark_" + now
     val db = new Bytecask(dir)
     warmup(db)
@@ -57,7 +57,7 @@ object Benchmark {
 
   def b3() {
     println("\n--- Benchmark 3 (splitting)...\n")
-    val dir = mkTmpDir.getAbsolutePath
+    val dir = mkTempDir.getAbsolutePath
     val db = new Bytecask(dir, maxFileSize = 1024 * 20)
     val n = 100
     val length = 2048
@@ -74,7 +74,7 @@ object Benchmark {
 
   def b4() {
     println("\n--- Benchmark 3 (compacting)...\n")
-    val dir = mkTmpDir.getAbsolutePath
+    val dir = mkTempDir.getAbsolutePath
     val db = new Bytecask(dir, maxFileSize = 1024 * 10)
     val n = 100
     val length = 2048

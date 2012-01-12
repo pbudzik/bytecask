@@ -23,7 +23,7 @@ package bytecask
 import java.util.Arrays
 
 /*
-Internal representation that has equals and lets compare arrays
+Internal byte array representation with equals to compare array values
  */
 
 final class Bytes(val bytes: Array[Byte]) {

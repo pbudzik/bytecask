@@ -25,9 +25,9 @@ import org.scalatest.{BeforeAndAfterEach, FunSuite}
 
 import bytecask.Utils._
 import bytecask.Bytes._
+import bytecask.Files._
 
-class ConcurrentSuite extends FunSuite
-with ShouldMatchers with BeforeAndAfterEach with TestSupport {
+class ConcurrentSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach with TestSupport {
 
   var db: Bytecask = _
 
@@ -79,7 +79,7 @@ with ShouldMatchers with BeforeAndAfterEach with TestSupport {
   }
 
   override def beforeEach() {
-    db = new Bytecask(mkTmpDir.getAbsolutePath)
+    db = new Bytecask(mkTempDir)
   }
 
   override def afterEach() {
