@@ -22,6 +22,7 @@ package benchmark
 
 import bytecask.Utils._
 import bytecask.Bytes._
+import bytecask.Files._
 import util.Random
 import bytecask.{Compressor, Bytecask}
 
@@ -35,29 +36,29 @@ object Benchmark {
   }
 
   def b1() {
-    println("\n--- Benchmark 1 (w/o compressing)...\n")
-    //val dir = mkTempDir.getAbsolutePath
+    println("\n--- Benchmark 1 - small values...\n")
+    //val dir = mkTempDir
     val dir = "/media/ext/tmp/benchmark_" + now
     val db = new Bytecask(dir)
     warmup(db)
-    putAndGet(db)
+    putAndGet(db, 128)
     println(db.stats())
     db.destroy()
   }
 
   def b2() {
-    println("\n--- Benchmark 2 (w/ compressing)...\n")
+    println("\n--- Benchmark 2 - big values...\n")
     val dir = "/media/ext/tmp/benchmark_" + now
-    val db = new Bytecask(dir, processor = Compressor)
+    val db = new Bytecask(dir)
     warmup(db)
-    putAndGet(db)
+    putAndGet(db, 1024 * 64)
     println(db.stats())
     db.destroy()
   }
 
   def b3() {
     println("\n--- Benchmark 3 (splitting)...\n")
-    val dir = mkTempDir.getAbsolutePath
+    val dir = mkTempDir
     val db = new Bytecask(dir, maxFileSize = 1024 * 20)
     val n = 100
     val length = 2048
@@ -98,10 +99,10 @@ object Benchmark {
     db.destroy()
   }
 
-  private def putAndGet(db: Bytecask) {
+  private def putAndGet(db: Bytecask, valueSize: Int) {
     println("+ db: %s\n".format(db))
     val n = 10000
-    val length = 2048
+    val length = valueSize
     val bytes = randomBytes(length)
     throughput("sequential put of different %s items".format(n), n, n * length) {
       for (i <- 1 to n) db.put("key_" + i, bytes)

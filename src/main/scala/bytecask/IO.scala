@@ -39,46 +39,36 @@ object IO {
     val valueSize = value.size
     val length = IO.HEADER_SIZE + keySize + valueSize
     val buffer = new Array[Byte](length)
-
     writeInt32(timestamp, buffer, 4)
     writeInt16(keySize, buffer, 8)
     writeInt32(valueSize, buffer, 10)
     key.bytes.copyToArray(buffer, 14)
     value.bytes.copyToArray(buffer, 14 + keySize)
-
     val crc = new CRC32
     crc.update(buffer, 4, length - 4)
     val crcValue = crc.getValue
     writeInt32(crcValue, buffer, 0)
-
     appender.write(buffer, 0, length)
-
     (pos, length, timestamp)
   }
 
   def readEntry(reader: RandomAccessFile, entry: IndexEntry) = {
     reader.seek(entry.pos)
-    // println("pointer: " + reader.getFilePointer)
     val buffer = new Array[Byte](entry.length)
     val read = reader.read(buffer)
     if (read < entry.length) throw new IOException("Could not read all data: %s/%s".format(read, entry.length))
     val expectedCrc = readUInt32(buffer(0), buffer(1), buffer(2), buffer(3))
-    // println("crc: " + expectedCrc)
     val crc = new CRC32
     crc.update(buffer, 4, entry.length - 4)
     val actualCrc = crc.getValue.toInt
-    //println("acrc: " + actualCrc)
     if (expectedCrc != actualCrc) throw new IOException("CRC check failed: %s != %s".format(expectedCrc, actualCrc))
     val timestamp = readUInt32(buffer(4), buffer(5), buffer(6), buffer(7))
     val keySize = readUInt16(buffer(8), buffer(9))
-    //println("ks: " + keySize)
     val valueSize = readUInt32(buffer(10), buffer(11), buffer(12), buffer(13))
-    //println("vs: " + valueSize)
     val key = new Array[Byte](keySize)
     Array.copy(buffer, IO.HEADER_SIZE, key, 0, keySize)
     val value = new Array[Byte](valueSize)
     Array.copy(buffer, IO.HEADER_SIZE + keySize, value, 0, valueSize)
-    //println("v: " + value.toList)
     FileEntry(entry.pos, actualCrc, keySize, valueSize, timestamp, key, value)
   }
 
@@ -88,19 +78,15 @@ object IO {
     val read = reader.read(crcBuffer)
     if (read <= 0) throw new IOException("Nothing more to read")
     val expectedCrc = readUInt32(crcBuffer(0), crcBuffer(1), crcBuffer(2), crcBuffer(3))
-    // println("exp crc=" + expectedCrc)
     val tsBuffer = new Array[Byte](4)
     reader.read(tsBuffer)
     val timestamp = readUInt32(tsBuffer(0), tsBuffer(1), tsBuffer(2), tsBuffer(3))
-    // println("ts=" + timestamp)
     val ksBuffer = new Array[Byte](2)
     reader.read(ksBuffer)
     val keySize = readUInt16(ksBuffer(0), ksBuffer(1))
-    //println("ks=" + keySize)
     val vsBuffer = new Array[Byte](4)
     reader.read(vsBuffer)
     val valueSize = readUInt32(vsBuffer(0), vsBuffer(1), vsBuffer(2), vsBuffer(3))
-    //println("vs=" + valueSize)
     val key = new Array[Byte](keySize)
     reader.read(key)
     val value = new Array[Byte](valueSize)
