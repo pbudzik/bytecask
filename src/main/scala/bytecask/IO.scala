@@ -103,8 +103,8 @@ object IO {
   }
 
   @inline
-  def readEntry(dir: String, entry: IndexEntry): FileEntry = {
-    withResource(new RandomAccessFile(dir + "/" + entry.file, "r")) {
+  def readEntry(pool: RandomAccessFilePool, dir: String, entry: IndexEntry): FileEntry = {
+    withPooled(pool, dir + "/" + entry.file) {
       reader => readEntry(reader, entry)
     }
   }
@@ -166,8 +166,8 @@ final class IO(val dir: String) extends Closeable with Logging with Locking {
     IO.appendEntry(appender, key, value)
   }
 
-  def readValue(entry: IndexEntry): Array[Byte] = {
-    IO.readEntry(dir, entry).value
+  def readValue(pool: RandomAccessFilePool, entry: IndexEntry): Array[Byte] = {
+    IO.readEntry(pool, dir, entry).value
   }
 
   private def createAppender() = writeLock {

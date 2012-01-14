@@ -86,13 +86,14 @@ abstract class FileReadersPool[T <: {def close()}](maxReaders: Int) {
   }
 }
 
-class RandomAccessFilePool extends FileReadersPool[RandomAccessFile](processorsNum) {
+class RandomAccessFilePool(maxFiles: Int) extends FileReadersPool[RandomAccessFile](maxFiles) {
   def createReader(file: String) = {
     new RandomAccessFile(file, "r")
   }
 
   override def get(file: String) = {
     val reader = super.get(file)
+    reader.getChannel.isOpen
     reader.seek(0)
     reader
   }

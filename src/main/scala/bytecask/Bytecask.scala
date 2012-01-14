@@ -28,7 +28,8 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSize: Long = Int.MaxValue,
                minFileSizeToCompact: Int = 1024 * 1024, dataCompactThreshold: Int = 1024 * 1024,
-               processor: ValueProcessor = PassThru, autoCompaction: Boolean = false, jmx: Boolean = true)
+               processor: ValueProcessor = PassThru, autoCompaction: Boolean = false, jmx: Boolean = true,
+               maxConcurrentReaders: Int = 10)
   extends Logging {
   val createdAt = System.currentTimeMillis()
   mkDirIfNeeded(dir)
@@ -37,7 +38,7 @@ class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSiz
   val splits = new AtomicInteger
   lazy val compactor = new Compactor(io, index)
   val TOMBSTONE_VALUE = Bytes.EMPTY
-
+  val readers = new RandomAccessFilePool(maxConcurrentReaders)
   init()
 
   def init() {
@@ -58,7 +59,7 @@ class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSiz
   def get(key: Array[Byte]) = {
     checkArgument(key.length > 0, "Key cannot be empty")
     val entry = index.get(key)
-    if (!entry.isEmpty) processor.after(Some(io.readValue(entry.get))) else None
+    if (!entry.isEmpty) processor.after(Some(io.readValue(readers, entry.get))) else None
   }
 
   def delete(key: Array[Byte]) {
@@ -73,6 +74,7 @@ class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSiz
   }
 
   def close() {
+    readers.destroy()
     io.close()
   }
 

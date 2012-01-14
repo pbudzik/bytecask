@@ -22,8 +22,8 @@ package bytecask
 
 import org.xerial.snappy.Snappy
 import java.util.concurrent.atomic.AtomicLong
-import java.io.{IOException, File}
 import bytecask.Files.BoostedReader
+import java.io.{RandomAccessFile, IOException, File}
 
 object Utils {
 
@@ -118,6 +118,15 @@ object Utils {
       f(resource)
     } finally {
       resource.close()
+    }
+  }
+
+  def withPooled[A](pool: RandomAccessFilePool, file: String)(f: RandomAccessFile => A) = {
+    val reader = pool.get(file)
+    try {
+      f(reader)
+    } finally {
+      pool.release(file, reader)
     }
   }
 }
