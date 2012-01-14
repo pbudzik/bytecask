@@ -84,15 +84,15 @@ object IO {
   def readEntry(reader: RandomAccessFile) = {
     val pos = reader.getFilePointer
     val header = new Array[Byte](IO.HEADER_SIZE)
-    reader.readOrThrow(header, "Nothing more to read")
+    reader.readOrThrow(header, "Failed to read chunk of %s bytes".format(IO.HEADER_SIZE))
     val expectedCrc = readUInt32(header(0), header(1), header(2), header(3))
     val timestamp = readUInt32(header(4), header(5), header(6), header(7))
     val keySize = readUInt16(header(8), header(9))
     val valueSize = readUInt32(header(10), header(11), header(12), header(13))
     val key = new Array[Byte](keySize)
-    reader.readOrThrow(key, "Nothing more to read")
+    reader.readOrThrow(key, "Failed to read chunk of %s bytes".format(keySize))
     val value = new Array[Byte](valueSize)
-    reader.readOrThrow(value, "Nothing more to read")
+    reader.readOrThrow(value, "Failed to read chunk of %s bytes".format(valueSize))
     val crc = new CRC32
     crc.update(header, 4, 10)
     crc.update(key, 0, keySize)
