@@ -27,7 +27,7 @@ import java.io._
 import bytecask.Utils._
 
 object IO {
-  val HEADER_SIZE = 14 // 4 + 4 + 2 + 4 bytes
+  val HEADER_SIZE = 14 //crc, ts, ks, vs -> 4 + 4 + 2 + 4 bytes
   val DEFAULT_MAX_FILE_SIZE = Int.MaxValue // 2GB
   val ACTIVE_FILE_NAME = "0"
   val FILE_REGEX = "^[0-9]+$"
@@ -52,6 +52,10 @@ object IO {
     (pos, length, timestamp)
   }
 
+  /*
+ Indexed read
+  */
+
   def readEntry(reader: RandomAccessFile, entry: IndexEntry) = {
     reader.seek(entry.pos)
     val buffer = new Array[Byte](entry.length)
@@ -72,28 +76,29 @@ object IO {
     FileEntry(entry.pos, actualCrc, keySize, valueSize, timestamp, key, value)
   }
 
+  /*
+ Iterative non-indexed read
+  */
+
   def readEntry(reader: RandomAccessFile) = {
     val pos = reader.getFilePointer
-    val crcBuffer = new Array[Byte](4)
-    val read = reader.read(crcBuffer)
+    val header = new Array[Byte](IO.HEADER_SIZE)
+    var read = reader.read(header)
     if (read <= 0) throw new IOException("Nothing more to read")
-    val expectedCrc = readUInt32(crcBuffer(0), crcBuffer(1), crcBuffer(2), crcBuffer(3))
-    val tsBuffer = new Array[Byte](4)
-    reader.read(tsBuffer)
-    val timestamp = readUInt32(tsBuffer(0), tsBuffer(1), tsBuffer(2), tsBuffer(3))
-    val ksBuffer = new Array[Byte](2)
-    reader.read(ksBuffer)
-    val keySize = readUInt16(ksBuffer(0), ksBuffer(1))
-    val vsBuffer = new Array[Byte](4)
-    reader.read(vsBuffer)
-    val valueSize = readUInt32(vsBuffer(0), vsBuffer(1), vsBuffer(2), vsBuffer(3))
+    val expectedCrc = readUInt32(header(0), header(1), header(2), header(3))
+    val timestamp = readUInt32(header(4), header(5), header(6), header(7))
+    val keySize = readUInt16(header(8), header(9))
+    val valueSize = readUInt32(header(10), header(11), header(12), header(13))
     val key = new Array[Byte](keySize)
-    reader.read(key)
+    read = reader.read(key)
+    if (read <= 0) throw new IOException("Nothing more to read")
     val value = new Array[Byte](valueSize)
-    reader.read(value)
-    val tested = tsBuffer ++ ksBuffer ++ vsBuffer ++ key ++ value //FIXME
+    read = reader.read(value)
+    if (read <= 0) throw new IOException("Nothing more to read")
     val crc = new CRC32
-    crc.update(tested, 0, tested.length)
+    crc.update(header, 4, 10)
+    crc.update(key, 0, keySize)
+    crc.update(value, 0, valueSize)
     val actualCrc = crc.getValue.toInt
     if (expectedCrc != actualCrc) throw new IOException("CRC check failed: %s != %s".format(expectedCrc, actualCrc))
     FileEntry(pos.toInt, actualCrc, keySize, valueSize, timestamp, key, value)
@@ -111,7 +116,9 @@ object IO {
     try {
       readAll(file, reader, callback)
     } catch {
-      case e: IOException => reader.close()
+      case e: IOException => //swallow
+    } finally {
+      reader.close()
     }
   }
 
