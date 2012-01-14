@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.io._
 
 import bytecask.Utils._
+import java.nio.ByteBuffer
 import bytecask.Files.boostedReader
 
 object IO {
@@ -34,23 +35,24 @@ object IO {
   val FILE_REGEX = "^[0-9]+$"
 
   def appendEntry(appender: RandomAccessFile, key: Bytes, value: Bytes) = appender.synchronized {
-    val pos = appender.getFilePointer.toInt
+    val pos = appender.getFilePointer
     val timestamp = (Utils.now / 1000).intValue()
     val keySize = key.size
     val valueSize = value.size
     val length = IO.HEADER_SIZE + keySize + valueSize
-    val buffer = new Array[Byte](length)
-    writeInt32(timestamp, buffer, 4)
-    writeInt16(keySize, buffer, 8)
-    writeInt32(valueSize, buffer, 10)
-    key.bytes.copyToArray(buffer, 14)
-    value.bytes.copyToArray(buffer, 14 + keySize)
+    val buffer = ByteBuffer.allocate(length)
+    putInt32(buffer, timestamp, 4)
+    putInt16(buffer, keySize, 8)
+    putInt32(buffer, valueSize, 10)
+    buffer.position(buffer.position() + 14)
+    buffer.put(key)
+    buffer.put(value)
     val crc = new CRC32
-    crc.update(buffer, 4, length - 4)
-    val crcValue = crc.getValue
-    writeInt32(crcValue, buffer, 0)
-    appender.write(buffer, 0, length)
-    (pos, length, timestamp)
+    crc.update(buffer.array(), 4, length - 4)
+    putInt32(buffer, crc.getValue, 0)
+    buffer.flip()
+    appender.getChannel.write(buffer)
+    (pos.toInt, length, timestamp)
   }
 
   /*
@@ -58,22 +60,24 @@ object IO {
   */
 
   def readEntry(reader: RandomAccessFile, entry: IndexEntry) = {
-    reader.seek(entry.pos)
-    val buffer = new Array[Byte](entry.length)
-    val read = reader.read(buffer)
+    reader.getChannel.position(entry.pos)
+    val buffer = ByteBuffer.allocate(entry.length)
+    val read = reader.getChannel.read(buffer)
+    buffer.flip()
     if (read < entry.length) throw new IOException("Could not read all data: %s/%s".format(read, entry.length))
-    val expectedCrc = readUInt32(buffer(0), buffer(1), buffer(2), buffer(3))
+    val expectedCrc = readUInt32(buffer.get(0), buffer.get(1), buffer.get(2), buffer.get(3))
     val crc = new CRC32
-    crc.update(buffer, 4, entry.length - 4)
+    val a = buffer.array()
+    crc.update(a, 4, entry.length - 4)
     val actualCrc = crc.getValue.toInt
     if (expectedCrc != actualCrc) throw new IOException("CRC check failed: %s != %s".format(expectedCrc, actualCrc))
-    val timestamp = readUInt32(buffer(4), buffer(5), buffer(6), buffer(7))
-    val keySize = readUInt16(buffer(8), buffer(9))
-    val valueSize = readUInt32(buffer(10), buffer(11), buffer(12), buffer(13))
+    val timestamp = readUInt32(buffer.get(4), buffer.get(5), buffer.get(6), buffer.get(7))
+    val keySize = readUInt16(buffer.get(8), buffer.get(9))
+    val valueSize = readUInt32(buffer.get(10), buffer.get(11), buffer.get(12), buffer.get(13))
     val key = new Array[Byte](keySize)
-    Array.copy(buffer, IO.HEADER_SIZE, key, 0, keySize)
+    Array.copy(a, IO.HEADER_SIZE, key, 0, keySize)
     val value = new Array[Byte](valueSize)
-    Array.copy(buffer, IO.HEADER_SIZE + keySize, value, 0, valueSize)
+    Array.copy(a, IO.HEADER_SIZE + keySize, value, 0, valueSize)
     FileEntry(entry.pos, actualCrc, keySize, valueSize, timestamp, key, value)
   }
 
@@ -135,25 +139,25 @@ object IO {
   private def readUInt16(a: Byte, b: Byte) = (a & 0xFF) << 8 | (b & 0xFF) << 0
 
   @inline
-  private def writeInt32(value: Int, buffer: Array[Byte], start: Int) {
-    buffer.update(start, (value >>> 24).toByte)
-    buffer.update(start + 1, (value >>> 16).toByte)
-    buffer.update(start + 2, (value >>> 8).toByte)
-    buffer.update(start + 3, value.byteValue)
+  private def putInt32(buffer: ByteBuffer, value: Int, index: Int = 0) {
+    buffer.put(index, (value >>> 24).toByte)
+    buffer.put(index + 1, (value >>> 16).toByte)
+    buffer.put(index + 2, (value >>> 8).toByte)
+    buffer.put(index + 3, value.byteValue)
   }
 
   @inline
-  private def writeInt32(value: Long, buffer: Array[Byte], start: Int) {
-    buffer.update(start, (value >>> 24).toByte)
-    buffer.update(start + 1, (value >>> 16).toByte)
-    buffer.update(start + 2, (value >>> 8).toByte)
-    buffer.update(start + 3, value.toByte)
+  private def putInt32(buffer: ByteBuffer, value: Long, index: Int) {
+    buffer.put(index, (value >>> 24).toByte)
+    buffer.put(index + 1, (value >>> 16).toByte)
+    buffer.put(index + 2, (value >>> 8).toByte)
+    buffer.put(index + 3, value.toByte)
   }
 
   @inline
-  private def writeInt16(value: Int, buffer: Array[Byte], start: Int) {
-    buffer.update(start, (value >>> 8).toByte)
-    buffer.update(start + 1, value.toByte)
+  private def putInt16(buffer: ByteBuffer, value: Int, index: Int = 0) {
+    buffer.put(index, (value >>> 8).toByte)
+    buffer.put(index + 1, value.toByte)
   }
 }
 
