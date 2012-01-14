@@ -129,6 +129,14 @@ object Utils {
       pool.release(file, reader)
     }
   }
+
+  def firstSlot(a: Array[Int]): Option[Int] = {
+    for (i <- 0.to(a.size - 2)) {
+      if (a(i) + 1 < a(i + 1))
+        return Some((a(i) + 1))
+    }
+    None
+  }
 }
 
 object Files {
@@ -143,6 +151,6 @@ object Files {
     }
   }
 
-  implicit def readerToBoosted(reader: Reader) = new BoostedReader(reader)
+  implicit def boostedReader(reader: Reader) = new BoostedReader(reader)
 }
 

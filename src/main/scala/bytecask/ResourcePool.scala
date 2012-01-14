@@ -22,7 +22,6 @@ package bytecask
 
 import java.util.concurrent.{ConcurrentHashMap, TimeUnit, ConcurrentLinkedQueue, Semaphore}
 import java.io.RandomAccessFile
-import bytecask.Utils._
 
 import collection.JavaConversions._
 

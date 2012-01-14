@@ -61,33 +61,46 @@ class Compactor(io: IO, index: Index) extends Logging {
   }
 
   private def compact(files: Iterable[String]) {
-    files.foreach {
-      file =>
-        val subIndex = Map[Bytes, IndexEntry]()
-        val tmp = temporaryFor(file)
-        val appender = new RandomAccessFile(tmp, "rw")
+    files.foreach(compactFile(_))
+    lastCompaction.set(now)
+    compactions.incrementAndGet()
+  }
+
+  private def compactFile(file: String) = {
+    debug("Compacting '%s'".format(file))
+    val subIndex = Map[Bytes, IndexEntry]()
+    val tmp = temporaryFor(file)
+    var written = false
+    withResource(new RandomAccessFile(tmp, "rw")) {
+      appender =>
         IO.readEntries(dbFile(file), (file: File, entry: FileEntry) => {
           //debug("entry: " + entry)
           if (entry.valueSize > 0 && index.hasEntry(entry)) {
             val (pos, length, timestamp) = IO.appendEntry(appender, entry.key, entry.value)
             subIndex.put(entry.key, IndexEntry(file.getName, pos, length, timestamp))
+            written = true
           }
         })
-        appender.close()
-        if (!subIndex.isEmpty)
-          index.synchronized {
-            //debug("Merging indices..." + file + " and " + tmp)
-            for ((k, v) <- subIndex) index.getIndex.put(k, v)
-            files.foreach(changes.remove(_))
-            dbFile(file).delete()
-            tmp.renameTo(dbFile(file))
-          } else tmp.delete()
     }
-    lastCompaction.set(now)
-    compactions.incrementAndGet()
+    if (written) {
+      if (!subIndex.isEmpty)
+        index.synchronized {
+          //debug("Merging indices..." + file + " and " + tmp)
+          for ((k, v) <- subIndex) index.getIndex.put(k, v)
+          changes.remove(file)
+          if (dbFile(file).delete()) {
+            if (!tmp.renameTo(dbFile(file)))
+              warn("Unable to rename: " + dbFile(file))
+          } else warn("Unable to delete: " + dbFile(file))
+        } else tmp.delete()
+    } else {
+      //after compaction the file is empty
+      if (!tmp.delete()) warn("Unable to delete: " + tmp)
+      if (!dbFile(file).delete()) warn("Unable to delete: " + dbFile(file))
+    }
   }
 
-  def compactActive() {
+  def compactActiveFile() {
     index.synchronized {
       compact(List(IO.ACTIVE_FILE_NAME))
     }

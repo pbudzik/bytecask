@@ -38,7 +38,7 @@ class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSiz
   val splits = new AtomicInteger
   lazy val compactor = new Compactor(io, index)
   val TOMBSTONE_VALUE = Bytes.EMPTY
-  val readers = new RandomAccessFilePool(maxConcurrentReaders)
+  lazy val readers = new RandomAccessFilePool(maxConcurrentReaders)
   init()
 
   def init() {
@@ -107,7 +107,7 @@ class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSiz
 
   def compactAll() {
     synchronized {
-      compactor.compactActive()
+      compactor.compactActiveFile()
       compactor.forceCompact()
     }
   }

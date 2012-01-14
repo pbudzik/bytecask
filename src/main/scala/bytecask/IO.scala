@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.io._
 
 import bytecask.Utils._
-import bytecask.Files.readerToBoosted
+import bytecask.Files.boostedReader
 
 object IO {
   val HEADER_SIZE = 14 //crc, ts, ks, vs -> 4 + 4 + 2 + 4 bytes
@@ -186,7 +186,8 @@ final class IO(val dir: String) extends Closeable with Logging with Locking {
 
   private def nextFile() = {
     val files = ls(dir).filter(f => f.isFile && f.getName.matches(IO.FILE_REGEX)).map(_.getName.toInt).sortWith(_ < _)
-    val next = files.last + 1
+    val slot = firstSlot(files)
+    val next = if (!slot.isEmpty) slot.get else (files.last + 1)
     (dir / next).mkFile
   }
 
