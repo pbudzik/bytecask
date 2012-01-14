@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.io._
 
 import bytecask.Utils._
+import bytecask.Files.readerToBoosted
 
 object IO {
   val HEADER_SIZE = 14 //crc, ts, ks, vs -> 4 + 4 + 2 + 4 bytes
@@ -83,18 +84,15 @@ object IO {
   def readEntry(reader: RandomAccessFile) = {
     val pos = reader.getFilePointer
     val header = new Array[Byte](IO.HEADER_SIZE)
-    var read = reader.read(header)
-    if (read <= 0) throw new IOException("Nothing more to read")
+    reader.readOrThrow(header, "Nothing more to read")
     val expectedCrc = readUInt32(header(0), header(1), header(2), header(3))
     val timestamp = readUInt32(header(4), header(5), header(6), header(7))
     val keySize = readUInt16(header(8), header(9))
     val valueSize = readUInt32(header(10), header(11), header(12), header(13))
     val key = new Array[Byte](keySize)
-    read = reader.read(key)
-    if (read <= 0) throw new IOException("Nothing more to read")
+    reader.readOrThrow(key, "Nothing more to read")
     val value = new Array[Byte](valueSize)
-    read = reader.read(value)
-    if (read <= 0) throw new IOException("Nothing more to read")
+    reader.readOrThrow(value, "Nothing more to read")
     val crc = new CRC32
     crc.update(header, 4, 10)
     crc.update(key, 0, keySize)

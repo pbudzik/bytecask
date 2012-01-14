@@ -20,9 +20,10 @@
 
 package bytecask
 
-import java.io.File
 import org.xerial.snappy.Snappy
 import java.util.concurrent.atomic.AtomicLong
+import java.io.{IOException, File}
+import bytecask.Files.BoostedReader
 
 object Utils {
 
@@ -123,5 +124,16 @@ object Utils {
 
 object Files {
   implicit def fileToString(file: File) = file.getAbsolutePath
+
+  type Reader = {def read(bytes: Array[Byte]): Int}
+
+  class BoostedReader(reader: Reader) {
+    def readOrThrow(bytes: Array[Byte], message: String) = {
+      val read = reader.read(bytes)
+      if (read < 0) throw new IOException(message) else read
+    }
+  }
+
+  implicit def readerToBoosted(reader: Reader) = new BoostedReader(reader)
 }
 
