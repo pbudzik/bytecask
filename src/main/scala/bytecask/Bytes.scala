@@ -45,9 +45,11 @@ object Bytes {
 
   def apply(s: String) = new Bytes(s.getBytes)
 
-  implicit def toBytes(bytes: Array[Byte]) = Bytes(bytes)
+  implicit def arrToBytes(bytes: Array[Byte]) = Bytes(bytes)
 
   implicit def strToBytes(s: String) = Bytes(s.getBytes)
+
+  implicit def byteToBytes(i: Byte) = Bytes(Array(i))
 
   implicit def toArray(bytes: Bytes) = bytes.bytes
 
