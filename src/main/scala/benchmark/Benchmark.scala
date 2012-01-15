@@ -38,7 +38,7 @@ object Benchmark {
   def b1() {
     println("\n--- Benchmark 1 - small values...\n")
     //val dir = mkTempDir
-    val dir = "/media/ext/tmp/benchmark_" + now
+    val dir = "/media/STORAGE/tmp/benchmark_" + now
     val db = new Bytecask(dir)
     warmup(db)
     putAndGet(db, 128)
@@ -48,7 +48,7 @@ object Benchmark {
 
   def b2() {
     println("\n--- Benchmark 2 - big values...\n")
-    val dir = "/media/ext/tmp/benchmark_" + now
+    val dir = "/media/STORAGE/tmp/benchmark_" + now
     val db = new Bytecask(dir)
     warmup(db)
     putAndGet(db, 1024 * 64)
