@@ -78,6 +78,8 @@ final class Index(io: IO) extends Logging with Locking {
 
   def size = index.size
 
+  def keys = index.keys
+
   def getIndex = index
 }
 

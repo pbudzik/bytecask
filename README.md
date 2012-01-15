@@ -35,6 +35,10 @@ db.destroy()
 
   def delete(key: Array[Byte]): Option[Array[Byte]]
 
+  def keys(): Set[Array[Byte]]
+
+  def values(): Iterator[Array[Byte]]
+
   def close(): Unit
 
   def destroy(): Unit

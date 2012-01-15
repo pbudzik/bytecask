@@ -124,12 +124,19 @@ class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSiz
     notImplementedYet()
   }
 
-  def keys() {
-    notImplementedYet()
-  }
+  def keys() = index.keys
 
-  def values() {
-    notImplementedYet()
+  def values() = {
+    val iterator = index.keys.iterator
+    new Iterator[Option[Bytes]]() {
+
+      def hasNext = iterator.hasNext
+
+      def next() = {
+        val value = get(iterator.next())
+        value.orElse(None)
+      }
+    }
   }
 
 }

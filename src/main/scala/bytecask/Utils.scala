@@ -110,7 +110,7 @@ object Utils {
     if (!condition) throw new IllegalArgumentException(message)
   }
 
-  def notImplementedYet() {
+  def notImplementedYet[A](): A = {
     throw new RuntimeException("Not yet implemented")
   }
 
