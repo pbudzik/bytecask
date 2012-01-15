@@ -30,7 +30,7 @@ db.destroy()
 Date: 1/15/2012
 Hardware: Intel Core 2 Quad CPU Q6600@2.40GHz
 OS: Ubuntu 3.0.0-14-generic x86_64
-Java: 1.7.0_02-b13 64=bit with -server -XX:+TieredCompilation -XX:+AggressiveOpts
+Java: 1.7.0_02-b13 64-bit with -server -XX:+TieredCompilation -XX:+AggressiveOpts
 
 --- 64K values
 
@@ -42,7 +42,7 @@ paralell put of different 10000 items: time: 5408 ms, throughput: 1849 TPS at 11
 paralell get of the same item 10000 times: time: 953 ms, throughput: 10493 TPS at 680.82 MB/s
 paralell get of random 10000 items: time: 1051 ms, throughput: 9514 TPS at 594.67 MB/s
 
---- 128 bytes values
+--- 128 byte values
 
 sequential put of different 10000 items: time: 170 ms, throughput: 58823 TPS at 7.18 MB/s
 sequential get of different 10000 items: time: 130 ms, throughput: 76923 TPS at 9.39 MB/s
