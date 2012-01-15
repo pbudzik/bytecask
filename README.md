@@ -1,11 +1,11 @@
-### Bytecask - low latency k/v file database ###
+#### Bytecask - low latency k/v file database ####
 
 * lightweight - no dependencies, no underlying storages
 * embeddable building block, no daemons, no external scripts needed
 * storage component for distributed databases
 * inspired by Bitcask (Erlang)
 
-#### Key properties: ####
+### Key properties: ###
 
 * keys in memory
 * low latency write (appending)
@@ -13,7 +13,7 @@
 * automatic compaction/merging
 * optimized for Java 1.7
 
-#### Example ####
+### Example ###
 
 ```scala
 
