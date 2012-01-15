@@ -161,17 +161,18 @@ object IO {
   }
 }
 
-final class IO(val dir: String) extends Closeable with Logging with Locking {
+final class IO(val dir: String, maxConcurrentReaders: Int = 10) extends Closeable with Logging with Locking {
   val activeFile = dir + "/" + IO.ACTIVE_FILE_NAME
-  var appender = createAppender()
   val splits = new AtomicInteger
+  var appender = createAppender()
+  lazy val readers = new RandomAccessFilePool(maxConcurrentReaders)
 
   def appendEntry(key: Bytes, value: Bytes) = {
     IO.appendEntry(appender, key, value)
   }
 
-  def readValue(pool: RandomAccessFilePool, entry: IndexEntry): Array[Byte] = {
-    IO.readEntry(pool, dir, entry).value
+  def readValue(entry: IndexEntry): Array[Byte] = {
+    IO.readEntry(readers, dir, entry).value
   }
 
   private def createAppender() = writeLock {
@@ -188,6 +189,10 @@ final class IO(val dir: String) extends Closeable with Logging with Locking {
     next.getName
   }
 
+  /*
+  Next file that should be created to move current/active file to
+   */
+
   private def nextFile() = {
     val files = ls(dir).filter(f => f.isFile && f.getName.matches(IO.FILE_REGEX)).map(_.getName.toInt).sortWith(_ < _)
     val slot = firstSlot(files)
@@ -196,10 +201,24 @@ final class IO(val dir: String) extends Closeable with Logging with Locking {
   }
 
   def close() {
+    readers.destroy()
     appender.close()
   }
 
   def pos = appender.getFilePointer
+
+  /*
+ Deletes, but also makes sure whenever a file is deleted we don't keep cached file objects
+  */
+
+  def delete(file: String): Boolean = delete(file.mkFile)
+
+  def delete(file: File) = {
+    if (file.delete()) {
+      readers.invalidate(file.getAbsolutePath)
+      true
+    } else false
+  }
 }
 
 final case class FileEntry(pos: Int, crc: Int, keySize: Int, valueSize: Int, timestamp: Int, key: Array[Byte], value: Array[Byte]) {

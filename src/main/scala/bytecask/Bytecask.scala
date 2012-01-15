@@ -33,12 +33,11 @@ class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSiz
   extends Logging {
   val createdAt = System.currentTimeMillis()
   mkDirIfNeeded(dir)
-  val io = new IO(dir)
+  val io = new IO(dir, maxConcurrentReaders)
   val index = new Index(io)
   val splits = new AtomicInteger
   lazy val compactor = new Compactor(io, index)
   val TOMBSTONE_VALUE = Bytes.EMPTY
-  lazy val readers = new RandomAccessFilePool(maxConcurrentReaders)
   init()
 
   def init() {
@@ -59,7 +58,7 @@ class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSiz
   def get(key: Array[Byte]) = {
     checkArgument(key.length > 0, "Key cannot be empty")
     val entry = index.get(key)
-    if (!entry.isEmpty) processor.after(Some(io.readValue(readers, entry.get))) else None
+    if (!entry.isEmpty) processor.after(Some(io.readValue(entry.get))) else None
   }
 
   def delete(key: Array[Byte]) {
@@ -74,7 +73,6 @@ class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSiz
   }
 
   def close() {
-    readers.destroy()
     io.close()
   }
 

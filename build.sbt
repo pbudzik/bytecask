@@ -18,8 +18,6 @@ resolvers ++= Seq(
 
 libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % "0.9.30" % "compile",
-  "com.github.scopt" %% "scopt" % "1.1.2",
-  "com.google.guava" % "guava" % "10.0.1",
   "org.xerial.snappy" % "snappy-java" % "1.0.4.1",
   "org.scala-tools.testing" %% "scalacheck" % "1.9" % "test",
   "org.scalatest" %% "scalatest" % "1.6.1"% "test"

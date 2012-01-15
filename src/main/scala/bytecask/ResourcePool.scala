@@ -80,6 +80,10 @@ abstract class FileReadersPool[T <: {def close()}](maxReaders: Int) {
 
   def createReader(file: String): T
 
+  def invalidate(file: String) {
+    cache.remove(file)
+  }
+
   def destroy() {
     cache.foreach(_._2.destroy())
   }

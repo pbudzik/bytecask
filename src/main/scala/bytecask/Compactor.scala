@@ -67,7 +67,7 @@ class Compactor(io: IO, index: Index) extends Logging {
   }
 
   private def compactFile(file: String) = {
-    debug("Compacting '%s'".format(file))
+    debug("Compacting file: '%s'".format(file))
     val subIndex = Map[Bytes, IndexEntry]()
     val tmp = temporaryFor(file)
     var written = false
@@ -88,15 +88,15 @@ class Compactor(io: IO, index: Index) extends Logging {
           //debug("Merging indices..." + file + " and " + tmp)
           for ((k, v) <- subIndex) index.getIndex.put(k, v)
           changes.remove(file)
-          if (dbFile(file).delete()) {
+          if (io.delete(dbFile(file))) {
             if (!tmp.renameTo(dbFile(file)))
               warn("Unable to rename: " + dbFile(file))
           } else warn("Unable to delete: " + dbFile(file))
-        } else tmp.delete()
+        } else io.delete(tmp)
     } else {
       //after compaction the file is empty
-      if (!tmp.delete()) warn("Unable to delete: " + tmp)
-      if (!dbFile(file).delete()) warn("Unable to delete: " + dbFile(file))
+      if (!io.delete(tmp)) warn("Unable to delete: " + tmp)
+      if (!io.delete(dbFile(file))) warn("Unable to delete: " + dbFile(file))
     }
   }
 

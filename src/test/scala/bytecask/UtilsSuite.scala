@@ -35,5 +35,12 @@ class UtilsSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
     firstSlot(Array(1, 2, 3, 4)) should be(None)
   }
 
+  test("dirs") {
+    val dir = mkTempDir.getAbsolutePath
+    assert(dir.mkFile.exists())
+    assert(dirSize(dir) == 0)
+    assert(ls(dir).size == 0)
+    rmdir(dir)
+  }
 
 }
