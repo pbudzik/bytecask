@@ -27,7 +27,7 @@ db.destroy()
 [See the tests](https://github.com/pbudzik/bytecask/blob/master/src/test/scala/bytecask/BasicSuite.scala)
 
 ### Benchmark ####
-
+```
 Date: 1/15/2012
 Hardware: Intel Core 2 Quad CPU Q6600@2.40GHz
 OS: Ubuntu 3.0.0-14-generic x86_64
@@ -53,5 +53,5 @@ sequential get of the same item 10000 times: time: 119 ms, throughput: 84033 TPS
 paralell put of different 10000 items: time: 313 ms, throughput: 31948 TPS at 3.90 MB/s
 paralell get of the same item 10000 times: time: 160 ms, throughput: 62500 TPS at 7.63 MB/s
 paralell get of random 10000 items: time: 124 ms, throughput: 80645 TPS at 9.84 MB/s
-
+```
 
