@@ -22,7 +22,6 @@ db.put("foo", "some value...")
 println(db.get("foo"))
 db.delete("foo")
 db.destroy()
-
 ```
 [See the tests](https://github.com/pbudzik/bytecask/blob/master/src/test/scala/bytecask/BasicSuite.scala)
 
@@ -49,7 +48,6 @@ sequential put of different 10000 items: time: 170 ms, throughput: 58823 TPS at 
 sequential get of different 10000 items: time: 130 ms, throughput: 76923 TPS at 9.39 MB/s
 sequential get of random items 10000 times: time: 194 ms, throughput: 51546 TPS at 6.29 MB/s
 sequential get of the same item 10000 times: time: 119 ms, throughput: 84033 TPS at 10.26 MB/s
-
 paralell put of different 10000 items: time: 313 ms, throughput: 31948 TPS at 3.90 MB/s
 paralell get of the same item 10000 times: time: 160 ms, throughput: 62500 TPS at 7.63 MB/s
 paralell get of random 10000 items: time: 124 ms, throughput: 80645 TPS at 9.84 MB/s
