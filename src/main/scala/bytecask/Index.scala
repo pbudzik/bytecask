@@ -34,6 +34,7 @@ final class Index(io: IO) extends Logging with Locking {
   private val index = Map[Bytes, IndexEntry]()
 
   def init() {
+    debug("Initializing index....")
     ls(io.dir).toList.filter(_.length() > 0).foreach(indexFile(_))
   }
 

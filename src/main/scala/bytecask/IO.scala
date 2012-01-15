@@ -28,7 +28,7 @@ import bytecask.Utils._
 import java.nio.ByteBuffer
 import bytecask.Files.boostedReader
 
-object IO {
+object IO extends Logging {
   val HEADER_SIZE = 14 //crc, ts, ks, vs -> 4 + 4 + 2 + 4 bytes
   val DEFAULT_MAX_FILE_SIZE = Int.MaxValue // 2GB
   val ACTIVE_FILE_NAME = "0"
@@ -114,11 +114,15 @@ object IO {
   }
 
   def readEntries(file: File, callback: (File, FileEntry) => Any) {
+    val length = file.length()
     val reader = new RandomAccessFile(file, "r")
     try {
-      readAll(file, reader, callback)
+      while (reader.getFilePointer < length) {
+        val entry = readEntry(reader)
+        callback(file, entry)
+      }
     } catch {
-      case e: IOException => //swallow
+      case e: IOException => warn(e.toString)
     } finally {
       reader.close()
     }
@@ -213,7 +217,7 @@ final class IO(val dir: String, maxConcurrentReaders: Int = 10) extends Closeabl
 
   def delete(file: String): Boolean = delete(file.mkFile)
 
-  def delete(file: File) = {
+  def delete(file: File): Boolean = {
     if (file.delete()) {
       readers.invalidate(file.getAbsolutePath)
       true

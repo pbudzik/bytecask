@@ -27,8 +27,8 @@ import bytecask.Bytes._
 import java.util.concurrent.atomic.AtomicInteger
 
 class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSize: Long = Int.MaxValue,
-               minFileSizeToCompact: Int = 1024 * 1024, dataCompactThreshold: Int = 1024 * 1024,
-               processor: ValueProcessor = PassThru, autoCompaction: Boolean = false, jmx: Boolean = true,
+               minFileSizeToMerge: Int = 1024 * 1024, dataMergeThreshold: Int = 1024 * 1024,
+               processor: ValueProcessor = PassThru, autoMerge: Boolean = false, jmx: Boolean = true,
                maxConcurrentReaders: Int = 10)
   extends Logging {
   val createdAt = System.currentTimeMillis()
@@ -36,7 +36,7 @@ class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSiz
   val io = new IO(dir, maxConcurrentReaders)
   val index = new Index(io)
   val splits = new AtomicInteger
-  lazy val compactor = new Compactor(io, index)
+  lazy val merger = new Merger(io, index)
   val TOMBSTONE_VALUE = Bytes.EMPTY
   init()
 
@@ -50,7 +50,7 @@ class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSiz
     checkArgument(value.length > 0, "Value cannot be empty")
     val entry = index.get(key)
     val (pos, length, timestamp) = io.appendEntry(key, processor.before(value))
-    if (!entry.isEmpty && entry.get.isInactive) compactor.entryChanged(entry.get)
+    if (!entry.isEmpty && entry.get.isInactive) merger.entryChanged(entry.get)
     index.update(key, pos, length, timestamp)
     if (io.pos > maxFileSize) split()
   }
@@ -67,7 +67,7 @@ class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSiz
     if (!entry.isEmpty) {
       io.appendEntry(key, TOMBSTONE_VALUE)
       index.delete(key)
-      if (entry.get.isInactive) compactor.entryChanged(entry.get)
+      if (entry.get.isInactive) merger.entryChanged(entry.get)
       Some(entry)
     } else None
   }
@@ -82,8 +82,8 @@ class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSiz
   }
 
   def stats(): String = {
-    "name: %s, dir: %s, uptime: %s, count: %s, splits: %s, compactions: %s"
-      .format(name, dir, now - createdAt, count(), splits.get(), compactor.compactions)
+    "name: %s, dir: %s, uptime: %s, count: %s, splits: %s, merges: %s"
+      .format(name, dir, now - createdAt, count(), splits.get(), merger.merges)
   }
 
   def split() {
@@ -93,20 +93,13 @@ class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSiz
     splits.incrementAndGet()
   }
 
-  def compactCheck() {
-    compactor.compactIfNeeded(minFileSizeToCompact, dataCompactThreshold)
+  def mergeCheck() {
+    merger.mergeIfNeeded(minFileSizeToMerge, dataMergeThreshold)
   }
 
-  def compact() {
+  def merge() {
     synchronized {
-      compactor.forceCompact()
-    }
-  }
-
-  def compactAll() {
-    synchronized {
-      compactor.compactActiveFile()
-      compactor.forceCompact()
+      merger.forceMerge()
     }
   }
 

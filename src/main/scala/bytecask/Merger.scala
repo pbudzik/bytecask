@@ -32,12 +32,12 @@ is to be potentially compacted
 case class Delta(entries: Int, length: Int)
 
 /*
-Compacts inactive files to save space. TODO: merging small files
+Compacts and merges inactive files to save space.
  */
 
-class Compactor(io: IO, index: Index) extends Logging {
-  val compactions = new AtomicInteger
-  val lastCompaction = new AtomicLong
+class Merger(io: IO, index: Index) extends Logging {
+  val merges = new AtomicInteger
+  val lastMerge = new AtomicLong
   val changes = Map[String, Delta]()
 
   import bytecask.Utils._
@@ -49,7 +49,7 @@ class Compactor(io: IO, index: Index) extends Logging {
     }
   }
 
-  def compactIfNeeded(minFileSize: Int, dataThreshold: Int) {
+  def mergeIfNeeded(minFileSize: Int, dataThreshold: Int) {
     debug("Checking changes: " + changes)
     val files = for (
       (file, delta) <- changes
@@ -57,57 +57,39 @@ class Compactor(io: IO, index: Index) extends Logging {
     ) yield file
     debug("Files to be compacted: " + collToString(files))
     if (files.size > 1)
-      compact(files)
+      merge(files)
   }
 
-  private def compact(files: Iterable[String]) {
-    files.foreach(compactFile(_))
-    lastCompaction.set(now)
-    compactions.incrementAndGet()
-  }
-
-  private def compactFile(file: String) = {
-    debug("Compacting file: '%s'".format(file))
+  private def merge(files: Iterable[String]) = {
+    val target = files.head
+    debug("Merging files: %s -> '%s'".format(collToString(files), target))
+    val tmp = temporaryFor(target)
     val subIndex = Map[Bytes, IndexEntry]()
-    val tmp = temporaryFor(file)
-    var written = false
     withResource(new RandomAccessFile(tmp, "rw")) {
       appender =>
-        IO.readEntries(dbFile(file), (file: File, entry: FileEntry) => {
-          //debug("entry: " + entry)
-          if (entry.valueSize > 0 && index.hasEntry(entry)) {
-            val (pos, length, timestamp) = IO.appendEntry(appender, entry.key, entry.value)
-            subIndex.put(entry.key, IndexEntry(file.getName, pos, length, timestamp))
-            written = true
-          }
-        })
+        files.foreach {
+          file => IO.readEntries(dbFile(file), (file: File, entry: FileEntry) => {
+            if (entry.valueSize > 0 && index.hasEntry(entry)) {
+              val (pos, length, timestamp) = IO.appendEntry(appender, entry.key, entry.value)
+              subIndex.put(entry.key, IndexEntry(file.getName, pos, length, timestamp))
+            }
+          })
+        }
     }
-    if (written) {
-      if (!subIndex.isEmpty)
-        index.synchronized {
-          //debug("Merging indices..." + file + " and " + tmp)
-          for ((k, v) <- subIndex) index.getIndex.put(k, v)
-          changes.remove(file)
-          if (io.delete(dbFile(file))) {
-            if (!tmp.renameTo(dbFile(file)))
-              warn("Unable to rename: " + dbFile(file))
-          } else warn("Unable to delete: " + dbFile(file))
-        } else io.delete(tmp)
-    } else {
-      //after compaction the file is empty
-      if (!io.delete(tmp)) warn("Unable to delete: " + tmp)
-      if (!io.delete(dbFile(file))) warn("Unable to delete: " + dbFile(file))
-    }
+    if (!subIndex.isEmpty)
+      index.synchronized {
+        for ((k, v) <- subIndex) index.getIndex.put(k, v)
+        files.foreach(changes.remove(_))
+        files.foreach(file => io.delete(dbFile(file)))
+        tmp.renameTo(dbFile(target))
+        io.delete(tmp)
+        lastMerge.set(now)
+        merges.incrementAndGet()
+      }
   }
 
-  def compactActiveFile() {
-    index.synchronized {
-      compact(List(IO.ACTIVE_FILE_NAME))
-    }
-  }
-
-  def forceCompact() {
-    compact(ls(io.dir).map(_.getName))
+  def forceMerge() {
+    merge(ls(io.dir).map(_.getName))
   }
 
   private def temporaryFor(file: String) = (io.dir + "/" + file + "_").mkFile

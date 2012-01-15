@@ -75,7 +75,7 @@ object Benchmark {
   }
 
   def b4() {
-    println("\n--- Benchmark 3 (compacting)...\n")
+    println("\n--- Benchmark 3 (merging)...\n")
     val dir = mkTempDir.getAbsolutePath
     val db = new Bytecask(dir, maxFileSize = 1024 * 10)
     val n = 100
@@ -92,7 +92,7 @@ object Benchmark {
     println("Files in db's directory: %s".format(collToString(ls(dir).map(_.getName))))
     val s0 = dirSize(dir)
     println("Directory size: %s bytes".format(s0))
-    db.compact()
+    db.merge()
     val s1 = dirSize(dir)
     println("Directory size: %s bytes".format(s1))
     println("Reduction: %s | %s -> %3.2f".format(s0, s1, 100 - ((s1 * 1.0) / s0) * 100.0) + "%")
