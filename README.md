@@ -2,8 +2,9 @@
 
 * lightweight - no dependencies, no underlying storages
 * embeddable building block, no daemons, no external scripts needed
-* storage component for distributed databases
+* storage component for distributed NoSQL databases
 * inspired by Bitcask (Erlang)
+* Apache 2.0 License
 
 ### Key properties: ###
 
@@ -25,6 +26,19 @@ db.destroy()
 ```
 [See the tests](https://github.com/pbudzik/bytecask/blob/master/src/test/scala/bytecask/BasicSuite.scala)
 
+### API ###
+```scala
+
+  def put(key: Array[Byte], value: Array[Byte])
+
+  def get(key: Array[Byte]): Option[Array[Byte]]
+
+  def delete(key: Array[Byte]): Option[Array[Byte]]
+
+  def close(): Unit
+
+  def destroy(): Unit
+```
 ### Benchmark ####
 ```
 Date: 1/15/2012

@@ -61,7 +61,7 @@ class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSiz
     if (!entry.isEmpty) processor.after(Some(io.readValue(entry.get))) else None
   }
 
-  def delete(key: Array[Byte]) {
+  def delete(key: Array[Byte]) = {
     checkArgument(key.length > 0, "Key cannot be empty")
     val entry = index.get(key)
     if (!entry.isEmpty) {
