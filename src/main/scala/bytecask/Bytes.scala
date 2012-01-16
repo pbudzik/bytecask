@@ -51,6 +51,8 @@ object Bytes {
 
   implicit def byteToBytes(i: Byte) = Bytes(Array(i))
 
+  implicit def intToBytes(i: Int) = Array(i.toByte)
+
   implicit def toArray(bytes: Bytes) = bytes.bytes
 
   implicit def strToArray(s: String) = s.getBytes

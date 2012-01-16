@@ -35,10 +35,10 @@ class ConcurrentSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEa
     val threads = 1000
     val iters = 100
     concurrently(threads, iters) {
-      i => db.put(i.toString, randomBytes(1024))
+      i => db.put(i, randomBytes(1024))
     }
     concurrently(threads, iters) {
-      i => assert(!db.get(i.toString).isEmpty, "not empty")
+      i => assert(!db.get(i).isEmpty, "not empty")
     }
     db.count() should be(iters)
   }
@@ -47,10 +47,10 @@ class ConcurrentSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEa
     val threads = 1000
     val iters = 100
     concurrently(threads, iters) {
-      i => db.put(i.toString, randomBytes(1024 * 32))
+      i => db.put(i, randomBytes(1024 * 32))
     }
     concurrently(threads, iters) {
-      i => assert(!db.get(i.toString).isEmpty, "not empty")
+      i => assert(!db.get(i).isEmpty, "not empty")
     }
     db.count() should be(iters)
   }
@@ -59,10 +59,10 @@ class ConcurrentSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEa
     val threads = 100
     val iters = 100
     concurrently(threads, iters) {
-      i => db.put(i.toString, randomBytes(1024))
+      i => db.put(i, randomBytes(1024))
     }
     concurrently(threads, iters) {
-      i => db.delete(i.toString)
+      i => db.delete(i)
     }
     db.count() should be(0)
   }

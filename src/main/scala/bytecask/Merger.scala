@@ -24,12 +24,6 @@ import collection.mutable.Map
 import java.util.concurrent.atomic.{AtomicLong, AtomicInteger}
 import java.io.{RandomAccessFile, File}
 
-/*
-Represents change measure for a file - how many entries and how much data
-is to be potentially compacted
- */
-
-case class Delta(entries: Int, length: Int)
 
 /*
 Compacts and merges inactive files to save space.
@@ -64,7 +58,7 @@ class Merger(io: IO, index: Index) extends Logging {
     if (files.size > 1) {
       val target = files.head
       debug("Merging files: %s -> '%s'".format(collToString(files), target))
-      val tmp = temporaryFor(target)
+      val tmp = temporary(target)
       val subIndex = Map[Bytes, IndexEntry]()
       withResource(new RandomAccessFile(tmp, "rw")) {
         appender =>
@@ -91,10 +85,19 @@ class Merger(io: IO, index: Index) extends Logging {
   }
 
   def forceMerge() {
-    merge(ls(io.dir).map(_.getName).filter(_ != IO.ACTIVE_FILE_NAME).sortWith(_ < _))
+    merge(ls(io.dir).map(_.getName).filter(_ != IO.ACTIVE_FILE_NAME).map(_.toInt).sortWith(_ < _).map(_.toString))
   }
 
-  private def temporaryFor(file: String) = (io.dir + "/" + file + "_").mkFile
+  private def temporary(file: String) = (io.dir + "/" + file + "_").mkFile
+
+  private def hint(file: String) = (io.dir + "/" + file + "h").mkFile
 
   private def dbFile(file: String) = (io.dir + "/" + file).mkFile
 }
+
+/*
+Represents change measure for a file - how many entries and how much data
+is to be potentially compacted
+ */
+
+case class Delta(entries: Int, length: Int)
