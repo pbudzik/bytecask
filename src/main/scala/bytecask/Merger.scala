@@ -61,35 +61,37 @@ class Merger(io: IO, index: Index) extends Logging {
   }
 
   private def merge(files: Iterable[String]) = {
-    val target = files.head
-    debug("Merging files: %s -> '%s'".format(collToString(files), target))
-    val tmp = temporaryFor(target)
-    val subIndex = Map[Bytes, IndexEntry]()
-    withResource(new RandomAccessFile(tmp, "rw")) {
-      appender =>
-        files.foreach {
-          file => IO.readEntries(dbFile(file), (file: File, entry: FileEntry) => {
-            if (entry.valueSize > 0 && index.hasEntry(entry)) {
-              val (pos, length, timestamp) = IO.appendEntry(appender, entry.key, entry.value)
-              subIndex.put(entry.key, IndexEntry(file.getName, pos, length, timestamp))
-            }
-          })
+    if (files.size > 1) {
+      val target = files.head
+      debug("Merging files: %s -> '%s'".format(collToString(files), target))
+      val tmp = temporaryFor(target)
+      val subIndex = Map[Bytes, IndexEntry]()
+      withResource(new RandomAccessFile(tmp, "rw")) {
+        appender =>
+          files.foreach {
+            file => IO.readEntries(dbFile(file), (file: File, entry: FileEntry) => {
+              if (entry.valueSize > 0 && index.hasEntry(entry)) {
+                val (pos, length, timestamp) = IO.appendEntry(appender, entry.key, entry.value)
+                subIndex.put(entry.key, IndexEntry(file.getName, pos, length, timestamp))
+              }
+            })
+          }
+      }
+      if (!subIndex.isEmpty)
+        index.synchronized {
+          for ((k, v) <- subIndex) index.getIndex.put(k, v)
+          files.foreach(changes.remove(_))
+          files.foreach(file => io.delete(dbFile(file)))
+          tmp.renameTo(dbFile(target))
+          io.delete(tmp)
+          lastMerge.set(now)
+          merges.incrementAndGet()
         }
     }
-    if (!subIndex.isEmpty)
-      index.synchronized {
-        for ((k, v) <- subIndex) index.getIndex.put(k, v)
-        files.foreach(changes.remove(_))
-        files.foreach(file => io.delete(dbFile(file)))
-        tmp.renameTo(dbFile(target))
-        io.delete(tmp)
-        lastMerge.set(now)
-        merges.incrementAndGet()
-      }
   }
 
   def forceMerge() {
-    merge(ls(io.dir).map(_.getName))
+    merge(ls(io.dir).map(_.getName).filter(_ != IO.ACTIVE_FILE_NAME).sortWith(_ < _))
   }
 
   private def temporaryFor(file: String) = (io.dir + "/" + file + "_").mkFile
