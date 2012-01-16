@@ -27,7 +27,6 @@ import bytecask.Bytes._
 import java.util.concurrent.atomic.AtomicInteger
 
 class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSize: Long = Int.MaxValue,
-               minFileSizeToMerge: Int = 1024 * 1024, dataMergeThreshold: Int = 1024 * 1024,
                processor: ValueProcessor = PassThru, autoMerge: Boolean = false, jmx: Boolean = true,
                maxConcurrentReaders: Int = 10)
   extends Logging {
@@ -91,10 +90,6 @@ class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSiz
       index.postSplit(io.split())
     }
     splits.incrementAndGet()
-  }
-
-  def mergeCheck() {
-    merger.mergeIfNeeded(minFileSizeToMerge, dataMergeThreshold)
   }
 
   def merge() {

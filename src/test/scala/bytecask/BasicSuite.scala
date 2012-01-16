@@ -134,7 +134,7 @@ class BasicSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
   }
 
   test("merge") {
-    val db = new Bytecask(mkTempDir, maxFileSize = 1024, minFileSizeToMerge = 1, dataMergeThreshold = 100)
+    val db = new Bytecask(mkTempDir, maxFileSize = 1024)
     db.put("foo4", randomBytes(128))
     db.put("foo5", randomBytes(128))
     db.put("foo1", randomBytes(4096))
@@ -145,7 +145,7 @@ class BasicSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
     db.delete("foo4")
     db.delete("foo5")
     val s0 = dirSize(db.dir)
-    db.mergeCheck()
+    db.merge()
     val s1 = dirSize(db.dir)
     println(ls(db.dir).toList)
     println("sizes: " + s0 + " " + s1)

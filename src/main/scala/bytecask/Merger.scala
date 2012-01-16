@@ -49,13 +49,13 @@ class Merger(io: IO, index: Index) extends Logging {
     }
   }
 
-  def mergeIfNeeded(minFileSize: Int, dataThreshold: Int) {
+  def mergeIfNeeded(dataThreshold: Int) {
     debug("Checking changes: " + changes)
     val files = for (
       (file, delta) <- changes
-      if (dbFile(file).length() > minFileSize) && (delta.length > dataThreshold)
+      if (delta.length > dataThreshold) //might test number of entries altered
     ) yield file
-    debug("Files to be compacted: " + collToString(files))
+    debug("Files to be merged: " + collToString(files))
     if (files.size > 1)
       merge(files)
   }
