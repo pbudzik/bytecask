@@ -113,7 +113,7 @@ object IO extends Logging {
     }
   }
 
-  def readEntries(file: File, callback: (File, FileEntry) => Any) {
+  def readEntries(file: File, callback: (File, FileEntry) => Any): Boolean = {
     val length = file.length()
     val reader = new RandomAccessFile(file, "r")
     try {
@@ -121,8 +121,11 @@ object IO extends Logging {
         val entry = readEntry(reader)
         callback(file, entry)
       }
+      true
     } catch {
-      case e: IOException => warn(e.toString)
+      case e: IOException =>
+        warn(e.toString)
+        false
     } finally {
       reader.close()
     }

@@ -1,5 +1,3 @@
-package bytecask
-
 /*
 * Copyright 2011 P.Budzik
 *
@@ -19,6 +17,8 @@ package bytecask
 * Date: 7/2/11
 * Time: 12:07 PM
 */
+
+package bytecask
 
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.{BeforeAndAfterEach, FunSuite}

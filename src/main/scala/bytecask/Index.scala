@@ -29,18 +29,17 @@ import bytecask.Utils._
 Index (aka Keydir)- keeps position and length of entry in file
  */
 
-final class Index(io: IO) extends Logging with Locking {
+final class Index(io: IO) extends Logging with Locking with Tracking {
 
   private val index = Map[Bytes, IndexEntry]()
 
   def init() {
-    debug("Initializing index....")
-    ls(io.dir).toList.filter(_.length() > 0).foreach(indexFile(_))
+    debug("Initializing index...")
+    if (ls(io.dir).toList.filter(_.length() > 0).map(indexFile(_)).filter(!_).size > 0) incErrors
   }
 
-  private def indexFile(file: File) {
+  private def indexFile(file: File) = {
     IO.readEntries(file, addEntry)
-    debug("after: " + index)
   }
 
   private def addEntry(file: File, entry: FileEntry) = writeLock {
