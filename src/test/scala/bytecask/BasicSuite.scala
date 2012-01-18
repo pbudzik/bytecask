@@ -59,7 +59,7 @@ class BasicSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
     db.destroy()
   }
 
-  test("bulk par put and get") {
+  test("bulk concurrent put and get") {
     val db = new Bytecask(mkTempDir)
     val length = 2048
     val bytes = randomBytes(length)

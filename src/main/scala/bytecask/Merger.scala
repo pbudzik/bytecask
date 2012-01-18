@@ -24,12 +24,11 @@ import collection.mutable.Map
 import java.util.concurrent.atomic.{AtomicLong, AtomicInteger}
 import java.io.{RandomAccessFile, File}
 
-
 /*
-Compacts and merges inactive files to save space.
+Merges inactive files to save space.
  */
 
-class Merger(io: IO, index: Index) extends Logging {
+final class Merger(io: IO, index: Index) extends Logging {
   val merges = new AtomicInteger
   val lastMerge = new AtomicLong
   val changes = Map[String, Delta]()
@@ -96,8 +95,8 @@ class Merger(io: IO, index: Index) extends Logging {
 }
 
 /*
-Represents change measure for a file - how many entries and how much data
-is to be potentially compacted
+Represents change measure for a file - how many entries and how much space
+is to be potentially regained
  */
 
 case class Delta(entries: Int, length: Int)

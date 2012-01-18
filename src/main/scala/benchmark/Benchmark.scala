@@ -126,15 +126,15 @@ object Benchmark {
     }
     println()
     val entries = (for (i <- 1 to n) yield ("key_" + i -> bytes)).toMap
-    throughput("paralell put of different %s items".format(n), n, n * length) {
+    throughput("concurrent put of different %s items".format(n), n, n * length) {
       entries.par.foreach(entry => db.put(entry._1, entry._2))
     }
 
-    throughput("paralell get of the same item %s times".format(n), n, n * length) {
+    throughput("concurrent get of the same item %s times".format(n), n, n * length) {
       entries.par.foreach(entry => db.get("key_100"))
     }
 
-    throughput("paralell get of random %s items".format(n), n, n * length) {
+    throughput("concurrent get of random %s items".format(n), n, n * length) {
       entries.par.foreach(entry => db.get(entry._1))
     }
   }

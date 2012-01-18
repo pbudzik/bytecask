@@ -92,8 +92,8 @@ object Utils {
     val t0 = now
     val result = f
     val time = now - t0
-    println("*** %s: time total: %s ms, 1 op: %s ms, throughput: %s TPS at %3.2f MB/s"
-      .format(name, time, (time * 1.0) / n, ((n * 1000) / time), (1000.0 * ((length / (1024.0 * 1024.0) / time)))))
+    println("*** %s: time: %s ms, 1 op: %s ms, throughput: %s TPS at %3.2f MB/s, total: %3.2f MB"
+      .format(name, time, (time * 1.0) / n, ((n * 1000) / time), (1000.0 * ((length / (1024.0 * 1024.0) / time))), length / (1024.0 * 1024.0)))
     result
   }
 
