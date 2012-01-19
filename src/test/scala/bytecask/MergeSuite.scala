@@ -44,7 +44,7 @@ class MergeSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
     ls(db.dir).size should be(4)
     db.merge()
     val s1 = dirSize(db.dir)
-    ls(db.dir).size should be(2)
+    ls(db.dir).size should be(2 + 1)
     println("size before: %s, after: %s ".format(s0, s1))
     assert(s1 < s0)
     assert(db.get("foo2").isEmpty)

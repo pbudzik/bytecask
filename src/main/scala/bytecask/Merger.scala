@@ -53,19 +53,27 @@ final class Merger(io: IO, index: Index) extends Logging {
       merge(files)
   }
 
+  /**
+   * Merges files and creates a "hint" file out of the compacted data file
+   */
+
   private def merge(files: Iterable[String]) = {
     if (files.size > 1) {
       val target = files.head
       debug("Merging files: %s -> '%s'".format(collToString(files), target))
-      val tmp = temporary(target)
+      val tmp = temporaryFile(target)
+      val hint = hintFile(target)
       val subIndex = Map[Bytes, IndexEntry]()
-      withResource(new RandomAccessFile(tmp, "rw")) {
-        appender =>
+      //hint: ts,ks,vs,vpos,key
+      withResources(new RandomAccessFile(tmp, "rw"), new RandomAccessFile(hint, "rw")) {
+        (a1, a2) =>
           files.foreach {
-            file => IO.readEntries(dbFile(file), (file: File, entry: FileEntry) => {
+            file => IO.readDataEntries(dbFile(file), (file: File, entry: DataEntry) => {
               if (entry.valueSize > 0 && index.hasEntry(entry)) {
-                val (pos, length, timestamp) = IO.appendEntry(appender, entry.key, entry.value)
-                subIndex.put(entry.key, IndexEntry(file.getName, pos, length, timestamp))
+                val (pos, length, timestamp) = IO.appendDataEntry(a1, entry.key, entry.value)
+                val indexEntry = IndexEntry(file.getName, pos, length, timestamp)
+                subIndex.put(entry.key, indexEntry)
+                IO.appendHintEntry(indexEntry)
               }
             })
           }
@@ -87,15 +95,15 @@ final class Merger(io: IO, index: Index) extends Logging {
     merge(ls(io.dir).map(_.getName).filter(_ != IO.ACTIVE_FILE_NAME).map(_.toInt).sortWith(_ < _).map(_.toString))
   }
 
-  private def temporary(file: String) = (io.dir + "/" + file + "_").mkFile
+  private def temporaryFile(file: String) = (io.dir + "/" + file + "_").mkFile
 
-  private def hint(file: String) = (io.dir + "/" + file + "h").mkFile
+  private def hintFile(file: String) = (io.dir + "/" + file + "h").mkFile
 
   private def dbFile(file: String) = (io.dir + "/" + file).mkFile
 }
 
 /*
-Represents change measure for a file - how many entries and how much space
+Represents "change measure" for a file - how many entries / how much space
 is to be potentially regained
  */
 

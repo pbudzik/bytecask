@@ -39,10 +39,10 @@ final class Index(io: IO) extends Logging with Locking with Tracking {
   }
 
   private def indexFile(file: File) = {
-    IO.readEntries(file, addEntry)
+    IO.readDataEntries(file, addEntry)
   }
 
-  private def addEntry(file: File, entry: FileEntry) = writeLock {
+  private def addEntry(file: File, entry: DataEntry) = writeLock {
     index.put(entry.key, IndexEntry(file.getName, entry.pos, entry.size, entry.timestamp))
   }
 
@@ -68,7 +68,7 @@ final class Index(io: IO) extends Logging with Locking with Tracking {
     }
   }
 
-  def hasEntry(entry: FileEntry) = {
+  def hasEntry(entry: DataEntry) = {
     val e = index.get(entry.key)
     //debug("hasEntry: " + e + " -> " + entry)
     !e.isEmpty && e.get.timestamp == entry.timestamp

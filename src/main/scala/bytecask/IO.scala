@@ -32,9 +32,9 @@ object IO extends Logging {
   val HEADER_SIZE = 14 //crc, ts, ks, vs -> 4 + 4 + 2 + 4 bytes
   val DEFAULT_MAX_FILE_SIZE = Int.MaxValue // 2GB
   val ACTIVE_FILE_NAME = "0"
-  val FILE_REGEX = "^[0-9]+$"
+  val DATA_FILE_REGEX = "^[0-9]+$"
 
-  def appendEntry(appender: RandomAccessFile, key: Bytes, value: Bytes) = appender.synchronized {
+  def appendDataEntry(appender: RandomAccessFile, key: Bytes, value: Bytes) = appender.synchronized {
     val pos = appender.getFilePointer
     val timestamp = (Utils.now / 1000).intValue()
     val keySize = key.size
@@ -55,11 +55,15 @@ object IO extends Logging {
     (pos.toInt, length, timestamp)
   }
 
+  def appendHintEntry(entry: IndexEntry) {
+
+  }
+
   /*
  Indexed read
   */
 
-  def readEntry(reader: RandomAccessFile, entry: IndexEntry) = {
+  def readDataEntry(reader: RandomAccessFile, entry: IndexEntry) = {
     reader.getChannel.position(entry.pos)
     val buffer = ByteBuffer.allocate(entry.length)
     val read = reader.getChannel.read(buffer)
@@ -78,14 +82,14 @@ object IO extends Logging {
     Array.copy(a, IO.HEADER_SIZE, key, 0, keySize)
     val value = new Array[Byte](valueSize)
     Array.copy(a, IO.HEADER_SIZE + keySize, value, 0, valueSize)
-    FileEntry(entry.pos, actualCrc, keySize, valueSize, timestamp, key, value)
+    DataEntry(entry.pos, actualCrc, keySize, valueSize, timestamp, key, value)
   }
 
   /*
  Iterative non-indexed read
   */
 
-  def readEntry(reader: RandomAccessFile) = {
+  def readDataEntry(reader: RandomAccessFile) = {
     val pos = reader.getFilePointer
     val header = new Array[Byte](IO.HEADER_SIZE)
     reader.readOrThrow(header, "Failed to read chunk of %s bytes".format(IO.HEADER_SIZE))
@@ -103,22 +107,22 @@ object IO extends Logging {
     crc.update(value, 0, valueSize)
     val actualCrc = crc.getValue.toInt
     if (expectedCrc != actualCrc) throw new IOException("CRC check failed: %s != %s".format(expectedCrc, actualCrc))
-    FileEntry(pos.toInt, actualCrc, keySize, valueSize, timestamp, key, value)
+    DataEntry(pos.toInt, actualCrc, keySize, valueSize, timestamp, key, value)
   }
 
   @inline
-  def readEntry(pool: RandomAccessFilePool, dir: String, entry: IndexEntry): FileEntry = {
+  def readEntry(pool: RandomAccessFilePool, dir: String, entry: IndexEntry): DataEntry = {
     withPooled(pool, dir + "/" + entry.file) {
-      reader => readEntry(reader, entry)
+      reader => readDataEntry(reader, entry)
     }
   }
 
-  def readEntries(file: File, callback: (File, FileEntry) => Any): Boolean = {
+  def readDataEntries(file: File, callback: (File, DataEntry) => Any): Boolean = {
     val length = file.length()
     val reader = new RandomAccessFile(file, "r")
     try {
       while (reader.getFilePointer < length) {
-        val entry = readEntry(reader)
+        val entry = readDataEntry(reader)
         callback(file, entry)
       }
       true
@@ -131,8 +135,8 @@ object IO extends Logging {
     }
   }
 
-  private def readAll(file: File, reader: RandomAccessFile, callback: (File, FileEntry) => Any) {
-    val entry = readEntry(reader)
+  private def readAll(file: File, reader: RandomAccessFile, callback: (File, DataEntry) => Any) {
+    val entry = readDataEntry(reader)
     callback(file, entry)
     readAll(file, reader, callback)
   }
@@ -174,8 +178,8 @@ final class IO(val dir: String, maxConcurrentReaders: Int = 10) extends Closeabl
   var appender = createAppender()
   lazy val readers = new RandomAccessFilePool(maxConcurrentReaders)
 
-  def appendEntry(key: Bytes, value: Bytes) = {
-    IO.appendEntry(appender, key, value)
+  def appendDataEntry(key: Bytes, value: Bytes) = {
+    IO.appendDataEntry(appender, key, value)
   }
 
   def readValue(entry: IndexEntry): Array[Byte] = {
@@ -201,7 +205,7 @@ final class IO(val dir: String, maxConcurrentReaders: Int = 10) extends Closeabl
    */
 
   private def nextFile() = {
-    val files = ls(dir).filter(f => f.isFile && f.getName.matches(IO.FILE_REGEX)).map(_.getName.toInt).sortWith(_ < _)
+    val files = ls(dir).filter(f => f.isFile && f.getName.matches(IO.DATA_FILE_REGEX)).map(_.getName.toInt).sortWith(_ < _)
     val slot = firstSlot(files)
     val next = if (!slot.isEmpty) slot.get else (files.last + 1)
     (dir / next).mkFile
@@ -228,6 +232,6 @@ final class IO(val dir: String, maxConcurrentReaders: Int = 10) extends Closeabl
   }
 }
 
-final case class FileEntry(pos: Int, crc: Int, keySize: Int, valueSize: Int, timestamp: Int, key: Array[Byte], value: Array[Byte]) {
+final case class DataEntry(pos: Int, crc: Int, keySize: Int, valueSize: Int, timestamp: Int, key: Array[Byte], value: Array[Byte]) {
   def size = IO.HEADER_SIZE + key.length + value.length
 }

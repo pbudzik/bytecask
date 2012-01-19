@@ -48,7 +48,7 @@ class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSiz
     checkArgument(key.length > 0, "Key cannot be empty")
     checkArgument(value.length > 0, "Value cannot be empty")
     val entry = index.get(key)
-    val (pos, length, timestamp) = io.appendEntry(key, processor.before(value))
+    val (pos, length, timestamp) = io.appendDataEntry(key, processor.before(value))
     if (!entry.isEmpty && entry.get.isInactive) merger.entryChanged(entry.get)
     index.update(key, pos, length, timestamp)
     if (io.pos > maxFileSize) split()
@@ -64,7 +64,7 @@ class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSiz
     checkArgument(key.length > 0, "Key cannot be empty")
     val entry = index.get(key)
     if (!entry.isEmpty) {
-      io.appendEntry(key, TOMBSTONE_VALUE)
+      io.appendDataEntry(key, TOMBSTONE_VALUE)
       index.delete(key)
       if (entry.get.isInactive) merger.entryChanged(entry.get)
       Some(entry)

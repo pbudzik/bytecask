@@ -122,6 +122,15 @@ object Utils {
     }
   }
 
+  def withResources[X <: {def close()}, A](resource1: X, resource2: X)(f: (X, X) => A) = {
+    try {
+      f(resource1, resource2)
+    } finally {
+      resource1.close()
+      resource2.close()
+    }
+  }
+
   def withPooled[A](pool: RandomAccessFilePool, file: String)(f: RandomAccessFile => A) = {
     val reader = pool.get(file)
     try {
