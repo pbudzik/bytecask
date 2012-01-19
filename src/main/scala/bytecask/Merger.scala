@@ -73,7 +73,7 @@ final class Merger(io: IO, index: Index) extends Logging {
                 val (pos, length, timestamp) = IO.appendDataEntry(a1, entry.key, entry.value)
                 val indexEntry = IndexEntry(file.getName, pos, length, timestamp)
                 subIndex.put(entry.key, indexEntry)
-                IO.appendHintEntry(indexEntry)
+                IO.appendHintEntry(a2, timestamp, entry.keySize, entry.valueSize, pos, entry.key)
               }
             })
           }

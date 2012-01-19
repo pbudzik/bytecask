@@ -55,8 +55,16 @@ object IO extends Logging {
     (pos.toInt, length, timestamp)
   }
 
-  def appendHintEntry(entry: IndexEntry) {
-
+  def appendHintEntry(appender: RandomAccessFile, timestamp: Int, keySize: Int, valueSize: Int, pos: Int, key: Array[Byte]) {
+    val buffer = ByteBuffer.allocate(4 + 2 + 4 + 4 + keySize)
+    putInt32(buffer, timestamp, 0)
+    putInt16(buffer, keySize, 4)
+    putInt32(buffer, valueSize, 6)
+    putInt32(buffer, pos, 10)
+    buffer.position(buffer.position() + 14)
+    buffer.put(key)
+    buffer.flip()
+    appender.getChannel.write(buffer)
   }
 
   /*
@@ -86,7 +94,7 @@ object IO extends Logging {
   }
 
   /*
- Iterative non-indexed read
+ Iterative non-indexed data entry read
   */
 
   def readDataEntry(reader: RandomAccessFile) = {
@@ -110,8 +118,12 @@ object IO extends Logging {
     DataEntry(pos.toInt, actualCrc, keySize, valueSize, timestamp, key, value)
   }
 
+  def readHintEntry(reader: RandomAccessFile) = {
+
+  }
+
   @inline
-  def readEntry(pool: RandomAccessFilePool, dir: String, entry: IndexEntry): DataEntry = {
+  def readDataEntry(pool: RandomAccessFilePool, dir: String, entry: IndexEntry): DataEntry = {
     withPooled(pool, dir + "/" + entry.file) {
       reader => readDataEntry(reader, entry)
     }
@@ -183,7 +195,7 @@ final class IO(val dir: String, maxConcurrentReaders: Int = 10) extends Closeabl
   }
 
   def readValue(entry: IndexEntry): Array[Byte] = {
-    IO.readEntry(readers, dir, entry).value
+    IO.readDataEntry(readers, dir, entry).value
   }
 
   private def createAppender() = writeLock {
