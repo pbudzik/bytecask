@@ -85,6 +85,14 @@ class MergeSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
     assert(db.get("2").isEmpty)
     assert(db.get("3").isEmpty)
     assert(!db.get("1").isEmpty)
+    assert(ls(db.dir).toList.map(_.getName).contains("1h"))
+    db.close()
+    db = new Bytecask(db.dir)
+    assert(db.get("11").isEmpty)
+    assert(db.get("12").isEmpty)
+    assert(db.get("2").isEmpty)
+    assert(db.get("3").isEmpty)
+    assert(!db.get("1").isEmpty)
     db.destroy()
   }
 
