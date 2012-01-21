@@ -71,7 +71,6 @@ final class Merger(io: IO, index: Index) extends Logging {
                 val (pos, length, timestamp) = IO.appendDataEntry(appender, entry.key, entry.value)
                 val indexEntry = IndexEntry(file.getName, pos, length, timestamp)
                 subIndex.put(entry.key, indexEntry)
-
               }
             })
           }
@@ -86,12 +85,19 @@ final class Merger(io: IO, index: Index) extends Logging {
               }
               files.foreach(changes.remove(_))
               files.foreach(file => io.delete(dbFile(file)))
+              index.synchronized(files.foreach(file => replaceFile(file, target)))
               tmp.renameTo(dbFile(target))
               io.delete(tmp)
               lastMerge.set(now)
               merges.incrementAndGet()
             }
       }
+    }
+  }
+
+  private def replaceFile(a: String, b: String) {
+    for ((k, v) <- index.getIndex) {
+      if (v.file == a) index.getIndex.put(k, IndexEntry(b, v.pos, v.length, v.timestamp))
     }
   }
 

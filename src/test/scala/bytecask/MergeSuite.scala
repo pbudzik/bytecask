@@ -65,6 +65,29 @@ class MergeSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
     db.destroy()
   }
 
+  test("merge2") {
+    var db = new Bytecask(mkTempDir, maxFileSize = 1024)
+    db.put("11", randomBytes(128))
+    db.put("12", randomBytes(1128))
+    db.put("1", randomBytes(1024))
+    db.put("2", randomBytes(6))
+    db.put("3", randomBytes(4096))
+    db.delete("11")
+    db.delete("12")
+    db.delete("2")
+    db.delete("3")
+    db.merge()
+    ls(db.dir).size should be(2 + 1)
+    println(collToString(ls(db.dir).toList))
+    println(db.index.getIndex)
+    assert(db.get("11").isEmpty)
+    assert(db.get("12").isEmpty)
+    assert(db.get("2").isEmpty)
+    assert(db.get("3").isEmpty)
+    assert(!db.get("1").isEmpty)
+    db.destroy()
+  }
+
   test("skip merge") {
     val db = new Bytecask(mkTempDir, maxFileSize = 1024)
     db.put("foo", randomBytes(128))
