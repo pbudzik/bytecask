@@ -62,32 +62,36 @@ final class Merger(io: IO, index: Index) extends Logging {
       val target = files.head
       debug("Merging files: %s -> '%s'".format(collToString(files), target))
       val tmp = temporaryFile(target)
-      val hint = hintFile(target)
       val subIndex = Map[Bytes, IndexEntry]()
-      //hint: ts,ks,vs,vpos,key
-      withResources(new RandomAccessFile(tmp, "rw"), new RandomAccessFile(hint, "rw")) {
-        (a1, a2) =>
+      withResource(new RandomAccessFile(tmp, "rw")) {
+        appender =>
           files.foreach {
             file => IO.readDataEntries(dbFile(file), (file: File, entry: DataEntry) => {
               if (entry.valueSize > 0 && index.hasEntry(entry)) {
-                val (pos, length, timestamp) = IO.appendDataEntry(a1, entry.key, entry.value)
+                val (pos, length, timestamp) = IO.appendDataEntry(appender, entry.key, entry.value)
                 val indexEntry = IndexEntry(file.getName, pos, length, timestamp)
                 subIndex.put(entry.key, indexEntry)
-                IO.appendHintEntry(a2, timestamp, entry.keySize, entry.valueSize, pos, entry.key)
+
               }
             })
           }
       }
-      if (!subIndex.isEmpty)
-        index.synchronized {
-          for ((k, v) <- subIndex) index.getIndex.put(k, v)
-          files.foreach(changes.remove(_))
-          files.foreach(file => io.delete(dbFile(file)))
-          tmp.renameTo(dbFile(target))
-          io.delete(tmp)
-          lastMerge.set(now)
-          merges.incrementAndGet()
-        }
+      withResource(new RandomAccessFile(hintFile(target), "rw")) {
+        appender =>
+          if (!subIndex.isEmpty)
+            index.synchronized {
+              for ((key, indexEntry) <- subIndex) {
+                index.getIndex.put(key, indexEntry)
+                IO.appendHintEntry(appender, indexEntry.timestamp, key.length, indexEntry.length, indexEntry.pos, key)
+              }
+              files.foreach(changes.remove(_))
+              files.foreach(file => io.delete(dbFile(file)))
+              tmp.renameTo(dbFile(target))
+              io.delete(tmp)
+              lastMerge.set(now)
+              merges.incrementAndGet()
+            }
+      }
     }
   }
 

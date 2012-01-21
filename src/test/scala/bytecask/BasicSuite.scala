@@ -83,22 +83,6 @@ class BasicSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
     db.destroy()
   }
 
-  test("index rebuild") {
-    val dir = mkTempDir
-    var db = new Bytecask(dir)
-    db.put("foo", "bar")
-    db.put("baz", "tar")
-    db.put("bav", "arc")
-    db.put("bav", "arv")
-    db.count() should be(3)
-    string(db.get("bav").get) should be("arv")
-    db.close()
-    db = new Bytecask(dir)
-    db.count() should be(3)
-    string(db.get("bav").get) should be("arv")
-    db.destroy()
-  }
-
   test("split") {
     val dir = mkTempDir
     var db = new Bytecask(dir, maxFileSize = 1024)

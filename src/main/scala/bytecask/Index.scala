@@ -50,11 +50,17 @@ final class Index(io: IO) extends Logging with Locking with Tracking {
   }
 
   private def processDataEntry(file: File, entry: DataEntry) = writeLock {
-    index.put(entry.key, IndexEntry(file.getName, entry.pos, entry.size, entry.timestamp))
+    if (entry.valueSize == 0)
+      index.remove(entry.key)
+    else
+      index.put(entry.key, IndexEntry(file.getName, entry.pos, entry.size, entry.timestamp))
   }
 
   private def processHintEntry(file: File, entry: HintEntry) = writeLock {
-    index.put(entry.key, IndexEntry(file.getName, entry.pos, entry.size, entry.timestamp))
+    if (entry.valueSize == 0)
+      index.remove(entry.key)
+    else
+      index.put(entry.key, IndexEntry(file.getName, entry.pos, entry.size, entry.timestamp))
   }
 
   def update(key: Bytes, pos: Int, length: Int, timestamp: Int) = writeLock {
