@@ -30,7 +30,7 @@ import bytecask.Files._
 class MergeSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
 
   test("merge") {
-    val db = new Bytecask(mkTempDir, maxFileSize = 1024)
+    var db = new Bytecask(mkTempDir, maxFileSize = 1024)
     db.put("foo4", randomBytes(128))
     db.put("foo5", randomBytes(128))
     db.put("foo1", randomBytes(4096))
@@ -51,6 +51,11 @@ class MergeSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
     assert(!db.get("foo1").isEmpty)
     assert(db.get("foo5").isEmpty)
     db.merger.merges.get should be(1)
+    assert(ls(db.dir).toList.map(_.getName).contains("1h"))
+    db.close()
+    db = new Bytecask(db.dir)
+    println(db.index.getIndex)
+    //assert(db.get("foo2").isEmpty)
     db.destroy()
   }
 

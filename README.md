@@ -47,29 +47,31 @@ db.destroy()
 ```
 ### Benchmark ####
 ```
-Date: 1/15/2012
+Date: 1/21/2012
 Hardware: Intel Core 2 Quad CPU Q6600@2.40GHz
-OS: Ubuntu 3.0.0-14-generic x86_64
+OS: Ubuntu 3.0.0-15-generic x86_64
 Java: 1.7.0_02-b13 64-bit with -server -XX:+TieredCompilation -XX:+AggressiveOpts
 
 --- 64K values
 
-sequential put of different 10000 items: time: 4511 ms, throughput: 2216 TPS at 141.55 MB/s
-sequential get of different 10000 items: time: 2215 ms, throughput: 4514 TPS at 282.17 MB/s
-sequential get of random items 10000 times: time: 2287 ms, throughput: 4372 TPS at 273.28 MB/s
-sequential get of the same item 10000 times: time: 2235 ms, throughput: 4474 TPS at 279.64 MB/s
-paralell put of different 10000 items: time: 5408 ms, throughput: 1849 TPS at 115.57 MB/s
-paralell get of the same item 10000 times: time: 953 ms, throughput: 10493 TPS at 680.82 MB/s
-paralell get of random 10000 items: time: 1051 ms, throughput: 9514 TPS at 594.67 MB/s
+sequential put of different 10000 items: time: 5642 ms, 1 op: 0.5642 ms, throughput: 1772 TPS at 110.78 MB/s, total: 625.00 MB
+sequential get of different 10000 items: time: 2094 ms, 1 op: 0.2094 ms, throughput: 4775 TPS at 298.47 MB/s, total: 625.00 MB
+sequential get of random items 10000 times: time: 1864 ms, 1 op: 0.1864 ms, throughput: 5364 TPS at 335.30 MB/s, total: 625.00 MB
+sequential get of the same item 10000 times: time: 1746 ms, 1 op: 0.1746 ms, throughput: 5727 TPS at 357.96 MB/s, total: 625.00 MB
+
+concurrent put of different 10000 items: time: 6437 ms, 1 op: 0.6437 ms, throughput: 1553 TPS at 97.09 MB/s, total: 625.00 MB
+concurrent get of the same item 10000 times: time: 843 ms, 1 op: 0.0843 ms, throughput: 11862 TPS at 741.40 MB/s, total: 625.00 MB
+concurrent get of random 10000 items: time: 6414 ms, 1 op: 0.6414 ms, throughput: 1559 TPS at 97.44 MB/s, total: 625.00 MB
 
 --- 128 byte values
 
-sequential put of different 10000 items: time: 170 ms, throughput: 58823 TPS at 7.18 MB/s
-sequential get of different 10000 items: time: 130 ms, throughput: 76923 TPS at 9.39 MB/s
-sequential get of random items 10000 times: time: 194 ms, throughput: 51546 TPS at 6.29 MB/s
-sequential get of the same item 10000 times: time: 119 ms, throughput: 84033 TPS at 10.26 MB/s
-paralell put of different 10000 items: time: 313 ms, throughput: 31948 TPS at 3.90 MB/s
-paralell get of the same item 10000 times: time: 160 ms, throughput: 62500 TPS at 7.63 MB/s
-paralell get of random 10000 items: time: 124 ms, throughput: 80645 TPS at 9.84 MB/s
+sequential put of different 10000 items: time: 164 ms, 1 op: 0.0164 ms, throughput: 60975 TPS at 7.44 MB/s, total: 1.22 MB
+sequential get of different 10000 items: time: 161 ms, 1 op: 0.0161 ms, throughput: 62111 TPS at 7.58 MB/s, total: 1.22 MB
+sequential get of random items 10000 times: time: 126 ms, 1 op: 0.0126 ms, throughput: 79365 TPS at 9.69 MB/s, total: 1.22 MB
+sequential get of the same item 10000 times: time: 132 ms, 1 op: 0.0132 ms, throughput: 75757 TPS at 9.25 MB/s, total: 1.22 MB
+
+concurrent put of different 10000 items: time: 258 ms, 1 op: 0.0258 ms, throughput: 38759 TPS at 4.73 MB/s, total: 1.22 MB
+concurrent get of the same item 10000 times: time: 126 ms, 1 op: 0.0126 ms, throughput: 79365 TPS at 9.69 MB/s, total: 1.22 MB
+concurrent get of random 10000 items: time: 94 ms, 1 op: 0.0094 ms, throughput: 106382 TPS at 12.99 MB/s, total: 1.22 MB
 ```
 

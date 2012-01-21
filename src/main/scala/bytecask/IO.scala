@@ -140,6 +140,11 @@ object IO extends Logging {
     }
   }
 
+  /*
+  Used by index to read restore index from files - either a hint file if exists
+  or a data file
+  */
+
   def readDataEntries(file: File, callback: (File, DataEntry) => Any): Boolean = {
     val length = file.length()
     val reader = new RandomAccessFile(file, "r")
@@ -158,10 +163,23 @@ object IO extends Logging {
     }
   }
 
-  private def readAll(file: File, reader: RandomAccessFile, callback: (File, DataEntry) => Any) {
-    val entry = readDataEntry(reader)
-    callback(file, entry)
-    readAll(file, reader, callback)
+  def readHintEntries(file: File, callback: (File, HintEntry) => Any) = {
+    val length = file.length()
+    val reader = new RandomAccessFile(file, "r")
+    try {
+      while (reader.getFilePointer < length) {
+        val entry = readHintEntry(reader)
+        val path = file.getAbsolutePath
+        callback(path.slice(0, path.length() - 1).mkFile, entry)
+      }
+      true
+    } catch {
+      case e: IOException =>
+        warn(e.toString)
+        false
+    } finally {
+      reader.close()
+    }
   }
 
   @inline
@@ -224,7 +242,7 @@ final class IO(val dir: String, maxConcurrentReaders: Int = 10) extends Closeabl
   }
 
   /*
-  Next file that should be created to move current/active file to
+  Next file that should be created to start appending there
    */
 
   private def nextFile() = {
@@ -256,7 +274,9 @@ final class IO(val dir: String, maxConcurrentReaders: Int = 10) extends Closeabl
 }
 
 final case class DataEntry(pos: Int, crc: Int, keySize: Int, valueSize: Int, timestamp: Int, key: Array[Byte], value: Array[Byte]) {
-  def size = IO.HEADER_SIZE + key.length + value.length
+  def size = IO.HEADER_SIZE + keySize + valueSize
 }
 
-final case class HintEntry(timestamp: Int, keySize: Int, valueSize: Int, pos: Int, key: Array[Byte])
+final case class HintEntry(timestamp: Int, keySize: Int, valueSize: Int, pos: Int, key: Array[Byte]) {
+  def size = IO.HEADER_SIZE + keySize + valueSize
+}

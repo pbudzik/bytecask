@@ -38,11 +38,22 @@ final class Index(io: IO) extends Logging with Locking with Tracking {
     if (ls(io.dir).toList.filter(_.length() > 0).map(indexFile(_)).filter(!_).size > 0) incErrors
   }
 
+  private def hintFile(file: File) = (file.getAbsolutePath + "h").mkFile
+
   private def indexFile(file: File) = {
-    IO.readDataEntries(file, addEntry)
+    if (hintFile(file).exists()) {
+      debug("hint file exists for " + file)
+      IO.readHintEntries(hintFile(file), processHintEntry)
+    }
+    else
+      IO.readDataEntries(file, processDataEntry)
   }
 
-  private def addEntry(file: File, entry: DataEntry) = writeLock {
+  private def processDataEntry(file: File, entry: DataEntry) = writeLock {
+    index.put(entry.key, IndexEntry(file.getName, entry.pos, entry.size, entry.timestamp))
+  }
+
+  private def processHintEntry(file: File, entry: HintEntry) = writeLock {
     index.put(entry.key, IndexEntry(file.getName, entry.pos, entry.size, entry.timestamp))
   }
 
