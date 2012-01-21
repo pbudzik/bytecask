@@ -20,13 +20,13 @@
 
 package bytecask
 
-import java.util.zip.CRC32
 import java.util.concurrent.atomic.AtomicInteger
 import java.io._
 
 import bytecask.Utils._
 import java.nio.ByteBuffer
 import bytecask.Files.boostedReader
+import java.util.zip.Adler32
 
 object IO extends Logging {
   val HEADER_SIZE = 14 //crc, ts, ks, vs -> 4 + 4 + 2 + 4 bytes
@@ -47,7 +47,7 @@ object IO extends Logging {
     buffer.position(buffer.position() + 14)
     buffer.put(key)
     buffer.put(value)
-    val crc = new CRC32
+    val crc = new Adler32
     crc.update(buffer.array(), 4, length - 4)
     putInt32(buffer, crc.getValue, 0)
     buffer.flip()
@@ -78,7 +78,7 @@ object IO extends Logging {
     buffer.flip()
     if (read < entry.length) throw new IOException("Could not read all data: %s/%s".format(read, entry.length))
     val expectedCrc = readUInt32(buffer.get(0), buffer.get(1), buffer.get(2), buffer.get(3))
-    val crc = new CRC32
+    val crc = new Adler32
     val a = buffer.array()
     crc.update(a, 4, entry.length - 4)
     val actualCrc = crc.getValue.toInt
@@ -109,7 +109,7 @@ object IO extends Logging {
     reader.readOrThrow(key, "Failed to read chunk of %s bytes".format(keySize))
     val value = new Array[Byte](valueSize)
     reader.readOrThrow(value, "Failed to read chunk of %s bytes".format(valueSize))
-    val crc = new CRC32
+    val crc = new Adler32
     crc.update(header, 4, 10)
     crc.update(key, 0, keySize)
     crc.update(value, 0, valueSize)
@@ -119,7 +119,18 @@ object IO extends Logging {
   }
 
   def readHintEntry(reader: RandomAccessFile) = {
-
+    val header = ByteBuffer.allocate(14)
+    reader.getChannel.read(header)
+    header.flip()
+    val timestamp = readUInt32(header.get(0), header.get(1), header.get(2), header.get(3))
+    val keySize = readUInt16(header.get(4), header.get(5))
+    val valueSize = readUInt32(header.get(6), header.get(7), header.get(8), header.get(9))
+    val pos = readUInt32(header.get(10), header.get(11), header.get(12), header.get(13))
+    val buffer = ByteBuffer.allocate(keySize)
+    reader.getChannel.read(buffer)
+    buffer.flip()
+    val key = buffer.array()
+    HintEntry(timestamp, keySize, valueSize, pos, key)
   }
 
   @inline
@@ -247,3 +258,5 @@ final class IO(val dir: String, maxConcurrentReaders: Int = 10) extends Closeabl
 final case class DataEntry(pos: Int, crc: Int, keySize: Int, valueSize: Int, timestamp: Int, key: Array[Byte], value: Array[Byte]) {
   def size = IO.HEADER_SIZE + key.length + value.length
 }
+
+final case class HintEntry(timestamp: Int, keySize: Int, valueSize: Int, pos: Int, key: Array[Byte])

@@ -38,6 +38,12 @@ object Utils {
     file
   }
 
+  //  def checksum(bytes: Array[Byte], offset:Int, len:Int) = {
+  //    val adler32 = new Adler32()
+  //    adler32.update(bytes)
+  //    adler32.getValue.toInt
+  //  }
+
   def collToString(col: Iterable[Any]) = {
     "[" + col.mkString(",") + "]"
   }
@@ -85,7 +91,7 @@ object Utils {
   def time(name: String)(f: => Any) {
     val t0 = now
     f
-    println("*** %s time: %s ms".format(now - t0))
+    println("*** %s time: %s ms".format(name, now - t0))
   }
 
   def throughput(name: String, n: Int, length: Int)(f: => Any) {

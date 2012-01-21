@@ -39,6 +39,8 @@ db.destroy()
 
   def values(): Iterator[Array[Byte]]
 
+  def merge(): Unit
+
   def close(): Unit
 
   def destroy(): Unit
