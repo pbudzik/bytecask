@@ -57,7 +57,11 @@ class MergeSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
     db.close()
     db = new Bytecask(db.dir)
     println(db.index.getIndex)
-//    assert(db.get("2").isEmpty)
+    assert(db.get("2").isEmpty)
+    assert(db.get("3").isEmpty)
+    assert(db.get("4").isEmpty)
+    assert(db.get("5").isEmpty)
+    assert(!db.get("1").isEmpty)
     db.destroy()
   }
 
