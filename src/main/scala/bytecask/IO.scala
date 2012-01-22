@@ -34,7 +34,7 @@ object IO extends Logging {
   val ACTIVE_FILE_NAME = "0"
   val DATA_FILE_REGEX = "^[0-9]+$"
 
-  def appendDataEntry(appender: RandomAccessFile, key: Bytes, value: Bytes) = appender.synchronized {
+  def appendDataEntry(appender: RandomAccessFile, key: Bytes, value: Bytes) = {
     val pos = appender.getFilePointer
     val timestamp = (Utils.now / 1000).intValue()
     val keySize = key.size

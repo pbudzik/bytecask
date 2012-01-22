@@ -81,6 +81,9 @@ abstract class FileReadersPool[T <: {def close()}](maxReaders: Int) {
   def createReader(file: String): T
 
   def invalidate(file: String) {
+    val pool = cache.get(file)
+    if (pool != null)
+      pool.destroy()
     cache.remove(file)
   }
 
