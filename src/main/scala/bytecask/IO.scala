@@ -72,7 +72,7 @@ object IO extends Logging {
   */
 
   def readDataEntry(reader: RandomAccessFile, entry: IndexEntry) = {
-    reader.getChannel.position(entry.pos)
+    reader.seek(entry.pos)
     val buffer = ByteBuffer.allocate(entry.length)
     val read = reader.getChannel.read(buffer)
     buffer.flip()
@@ -82,7 +82,8 @@ object IO extends Logging {
     val a = buffer.array()
     crc.update(a, 4, entry.length - 4)
     val actualCrc = crc.getValue.toInt
-    if (expectedCrc != actualCrc) throw new IOException("CRC check failed: %s != %s".format(expectedCrc, actualCrc))
+    if (expectedCrc != actualCrc) throw new IOException("CRC check failed: %s != %s, %s | %s"
+      .format(expectedCrc, actualCrc, entry, entry.pos))
     val timestamp = readUInt32(buffer.get(4), buffer.get(5), buffer.get(6), buffer.get(7))
     val keySize = readUInt16(buffer.get(8), buffer.get(9))
     val valueSize = readUInt32(buffer.get(10), buffer.get(11), buffer.get(12), buffer.get(13))
@@ -235,6 +236,7 @@ final class IO(val dir: String, maxConcurrentReaders: Int = 10) extends Closeabl
     //debug("Splitting...")
     appender.close()
     val next = nextFile()
+    readers.invalidate(activeFile)
     activeFile.mkFile.renameTo(next)
     appender = createAppender()
     splits.incrementAndGet()

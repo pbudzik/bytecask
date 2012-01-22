@@ -32,7 +32,7 @@ class ConcurrentSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEa
   var db: Bytecask = _
 
   test("put/get 1K") {
-    val threads = 1000
+    val threads = 64
     val iters = 100
     concurrently(threads, iters) {
       i => db.put(i, randomBytes(1024))
@@ -44,7 +44,7 @@ class ConcurrentSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEa
   }
 
   test("put/get 32K") {
-    val threads = 1000
+    val threads = 64
     val iters = 100
     concurrently(threads, iters) {
       i => db.put(i, randomBytes(1024 * 32))
@@ -56,7 +56,7 @@ class ConcurrentSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEa
   }
 
   test("put/delete") {
-    val threads = 100
+    val threads = 64
     val iters = 100
     concurrently(threads, iters) {
       i => db.put(i, randomBytes(1024))
@@ -68,7 +68,7 @@ class ConcurrentSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEa
   }
 
   test("mixed put/get") {
-    val threads = 1000
+    val threads = 64
     val iters = 1000
     db.put("a", randomBytes(1024 * 64))
     concurrently(threads, iters) {

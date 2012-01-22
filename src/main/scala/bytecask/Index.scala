@@ -102,7 +102,7 @@ final class Index(io: IO) extends Logging with Locking with Tracking {
 
 case class IndexEntry(file: String, pos: Int, length: Int, timestamp: Int) {
   //FIXME: reduce size as it is kept in memory
-  def isInactive = file != IO.ACTIVE_FILE_NAME
+  def isActive = file == IO.ACTIVE_FILE_NAME
 
-  def isActive = !isInactive
+  def isInactive = !isActive
 }
