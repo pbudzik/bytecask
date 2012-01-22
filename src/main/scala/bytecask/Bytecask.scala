@@ -48,10 +48,12 @@ class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSiz
     checkArgument(key.length > 0, "Key cannot be empty")
     checkArgument(value.length > 0, "Value cannot be empty")
     val entry = index.get(key)
-    val (pos, length, timestamp) = io.appendDataEntry(key, processor.before(value))
-    if (!entry.isEmpty && entry.get.isInactive) merger.entryChanged(entry.get)
-    index.update(key, pos, length, timestamp)
-    if (io.pos > maxFileSize) split()
+    synchronized {
+      val (pos, length, timestamp) = io.appendDataEntry(key, processor.before(value))
+      if (!entry.isEmpty && entry.get.isInactive) merger.entryChanged(entry.get)
+      index.update(key, pos, length, timestamp)
+      if (io.pos > maxFileSize) split()
+    }
   }
 
   def get(key: Array[Byte]) = {
