@@ -22,8 +22,9 @@ package bytecask
 
 import org.xerial.snappy.Snappy
 import java.util.concurrent.atomic.AtomicLong
-import bytecask.Files.BoostedReader
+import bytecask.Files.RichReader
 import java.io.{RandomAccessFile, IOException, File}
+import bytecask.Utils.RichIndexEntry
 
 object Utils {
 
@@ -144,6 +145,14 @@ object Utils {
     }
     None
   }
+
+  class RichIndexEntry(entry: IndexEntry) {
+    def isActive = (entry.file == IO.ACTIVE_FILE_NAME)
+
+    def isInactive = !isActive
+  }
+
+  implicit def indexEntryToRichEntry(entry: IndexEntry) = new RichIndexEntry(entry)
 }
 
 object Files {
@@ -151,13 +160,13 @@ object Files {
 
   type Reader = {def read(bytes: Array[Byte]): Int}
 
-  class BoostedReader(reader: Reader) {
+  class RichReader(reader: Reader) {
     def readOrThrow(bytes: Array[Byte], message: String) = {
       val read = reader.read(bytes)
       if (read < 0) throw new IOException(message) else read
     }
   }
 
-  implicit def boostedReader(reader: Reader) = new BoostedReader(reader)
+  implicit def richReader(reader: Reader) = new RichReader(reader)
 }
 

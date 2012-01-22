@@ -44,9 +44,7 @@ final class Index(io: IO) extends Logging with Locking with Tracking {
     if (hintFile(file).exists()) {
       debug("hint file exists for " + file)
       IO.readHintEntries(hintFile(file), processHintEntry)
-    }
-    else
-      IO.readDataEntries(file, processDataEntry)
+    } else IO.readDataEntries(file, processDataEntry)
   }
 
   private def processDataEntry(file: File, entry: DataEntry) = writeLock {
@@ -91,7 +89,7 @@ final class Index(io: IO) extends Logging with Locking with Tracking {
     !e.isEmpty && e.get.timestamp == entry.timestamp
   }
 
-  def contains(key: Bytes) = index.contains(key)
+   def contains(key: Bytes) = index.contains(key)
 
   def size = index.size
 
@@ -100,9 +98,4 @@ final class Index(io: IO) extends Logging with Locking with Tracking {
   def getIndex = index
 }
 
-case class IndexEntry(file: String, pos: Int, length: Int, timestamp: Int) {
-  //FIXME: reduce size as it is kept in memory
-  def isActive = file == IO.ACTIVE_FILE_NAME
-
-  def isInactive = !isActive
-}
+final case class IndexEntry(file: String, pos: Int, length: Int, timestamp: Int)

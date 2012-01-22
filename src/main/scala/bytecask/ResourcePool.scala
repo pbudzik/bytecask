@@ -92,6 +92,11 @@ abstract class FileReadersPool[T <: {def close()}](maxReaders: Int) {
   }
 }
 
+/**
+ * TODO: if there happens to be many files the file OS limit may be exceeded
+ * Might be a LRU cache w/ open files closure
+ */
+
 class RandomAccessFilePool(maxFiles: Int) extends FileReadersPool[RandomAccessFile](maxFiles) {
   def createReader(file: String) = new RandomAccessFile(file, "r")
 

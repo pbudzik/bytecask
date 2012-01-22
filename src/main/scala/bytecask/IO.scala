@@ -25,7 +25,7 @@ import java.io._
 
 import bytecask.Utils._
 import java.nio.ByteBuffer
-import bytecask.Files.boostedReader
+import bytecask.Files.richReader
 import java.util.zip.Adler32
 
 object IO extends Logging {
