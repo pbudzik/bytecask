@@ -26,7 +26,7 @@ import java.io.File
 import bytecask.Utils._
 
 /*
-Index (aka Keydir)- keeps position and length of entry in file
+Index (aka Keydir)- keeps position and length of entry in a file
  */
 
 final class Index(io: IO) extends Logging with Locking with Tracking {

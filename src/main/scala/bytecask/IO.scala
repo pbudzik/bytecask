@@ -119,6 +119,10 @@ object IO extends Logging {
     DataEntry(pos.toInt, actualCrc, keySize, valueSize, timestamp, key, value)
   }
 
+   /*
+ Iterative non-indexed hint entry read
+  */
+
   def readHintEntry(reader: RandomAccessFile) = {
     val header = ByteBuffer.allocate(14)
     reader.getChannel.read(header)
@@ -142,7 +146,7 @@ object IO extends Logging {
   }
 
   /*
-  Used by index to read restore index from files - either a hint file if exists
+  Used by index to restore index from files - either a hint file if exists
   or a data file
   */
 

@@ -24,6 +24,8 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.{BeforeAndAfterEach, FunSuite}
 
 import bytecask.Utils._
+import bytecask.Files._
+import bytecask.Bytes._
 
 class CompressSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
 
@@ -37,6 +39,19 @@ class CompressSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach
     val c = "1".getBytes
     val d = uncompress(compress(c))
     c should be(d)
+  }
+
+  test("basic ops with compression") {
+    val db = new Bytecask(mkTempDir, processor = Compressor)
+    db.put("foo", "bar")
+    db.put("baz", "boo")
+    string(db.get("foo").get) should be("bar")
+    string(db.get("baz").get) should be("boo")
+    db.keys().map(string(_)) should be(Set("foo", "baz"))
+    db.values().size should be(2)
+    db.delete("foo")
+    db.get("foo") should be(None)
+    db.destroy()
   }
 
 }

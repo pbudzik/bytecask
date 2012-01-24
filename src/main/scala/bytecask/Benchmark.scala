@@ -1,3 +1,5 @@
+package bytecask
+
 /*
 * Copyright 2011 P.Budzik
 *
@@ -18,15 +20,16 @@
 * Time: 9:50 AM
 */
 
-package benchmark
-
 import bytecask.Utils._
 import bytecask.Bytes._
 import bytecask.Files._
 import util.Random
-import bytecask.{Compressor, Bytecask}
 
 object Benchmark {
+
+  /**
+   *   Warning: it is writing to a temp directory!
+   */
 
   def main(args: Array[String]) {
     b1()
@@ -37,8 +40,7 @@ object Benchmark {
 
   def b1() {
     println("\n--- Benchmark 1 - small values...\n")
-    // val dir = mkTempDir
-    val dir = "/media/ext/tmp/benchmark_" + now
+    val dir = mkTempDir
     val db = new Bytecask(dir)
     warmup(db)
     putAndGet(db, 128)
@@ -48,8 +50,7 @@ object Benchmark {
 
   def b2() {
     println("\n--- Benchmark 2 - big values...\n")
-    //val dir = mkTempDir
-    val dir = "/media/ext/tmp/benchmark_" + now
+    val dir = mkTempDir
     val db = new Bytecask(dir)
     warmup(db)
     putAndGet(db, 1024 * 64)

@@ -3,7 +3,8 @@
 * lightweight - no dependencies, no underlying storages
 * embeddable building block, no daemons, no external scripts needed
 * storage component for distributed NoSQL databases
-* inspired by Bitcask (Erlang)
+* inspired by [Bitcask](https://github.com/basho/bitcask) (Erlang)
+* optional fast compression (backed by [snappy-java](http://code.google.com/p/snappy-java/))
 * Apache 2.0 License
 
 ### Key properties: ###
@@ -45,7 +46,17 @@ db.destroy()
 
   def destroy(): Unit
 ```
+### Dictionary ###
+
+*Index (Keydir) - keys are kept in memory and point to entries in data files
+*Data files - files that contain the actual data
+*Merge - depending on update/delete intensity more and more space is occupied, so
+merge operation compacts data as well as merges files into one
+*Hint files - when files are merged to one file a hint file is produced out of the new file being
+a persisted index, so later the index can be rebuilt w/o processing the data file
+
 ### Benchmark ####
+
 ```
 Date: 1/22/2012
 Hardware: Intel Core 2 Quad CPU Q6600@2.40GHz
@@ -75,3 +86,23 @@ concurrent get of the same item 10000 times: time: 96 ms, 1 op: 0.0096 ms, throu
 concurrent get of random 10000 items: time: 63 ms, 1 op: 0.0063 ms, throughput: 158730 TPS at 19.38 MB/s, total: 1.22 MB
 ```
 
+You can build a jar in sbt:
+
+    > assembly
+
+and issue:
+
+    bin/benchmark.sh
+
+### Collaboration ###
+
+*Reporting bugs and asking for features*
+
+You can use github issue tracker to report bugs or to ask for new features [here](https://github.com/pbudzik/bytecask/issues)
+
+*Submit patches*
+
+Patches are gladly welcome from their original author. Along with any patches, please state that the patch is your original work
+and that you license the work to the Bytecask project under the Apache 2.0 or a compatible license.
+
+To propose a patch, fork the project and send a pull request via github.

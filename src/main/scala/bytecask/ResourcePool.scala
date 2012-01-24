@@ -25,6 +25,12 @@ import java.io.RandomAccessFile
 
 import collection.JavaConversions._
 
+/**
+ * Instead of creating a RandomAccessFile per each reading thread the idea
+ * is to keep a pool of readers per each file and reuse it keeping it open.
+ * This avoids costly file handlers creation to the same files.
+ */
+
 abstract class ResourcePool[T <: {def close()}](maxResources: Int) {
 
   private final val semaphore = new Semaphore(maxResources, true)

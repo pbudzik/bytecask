@@ -131,6 +131,10 @@ class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSiz
 
 }
 
+/**
+ * Hook to install processing like compression
+ */
+
 trait ValueProcessor {
   def before(b: Bytes): Bytes
 

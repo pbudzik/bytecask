@@ -113,7 +113,7 @@ final class Merger(io: IO, index: Index) extends Logging {
 }
 
 /*
-Represents "change measure" for a file - how many entries / how much space
+Represents a "change measure" for a file - how many entries / how much space
 is to be potentially regained
  */
 
