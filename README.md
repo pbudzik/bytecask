@@ -48,11 +48,11 @@ db.destroy()
 ```
 ### Dictionary ###
 
-*Index (Keydir) - keys are kept in memory and point to entries in data files
-*Data files - files that contain the actual data
-*Merge - depending on update/delete intensity more and more space is occupied, so
+* Index (Keydir) - keys are kept in memory and point to entries in data files
+* Data files - files that contain the actual data
+* Merge - depending on update/delete intensity more and more space is occupied, so
 merge operation compacts data as well as merges files into one
-*Hint files - when files are merged to one file a hint file is produced out of the new file being
+* Hint files - when files are merged to one file a hint file is produced out of the new file being
 a persisted index, so later the index can be rebuilt w/o processing the data file
 
 ### Benchmark ####
@@ -96,11 +96,11 @@ and issue:
 
 ### Collaboration ###
 
-*Reporting bugs and asking for features*
+**Reporting bugs and asking for features**
 
 You can use github issue tracker to report bugs or to ask for new features [here](https://github.com/pbudzik/bytecask/issues)
 
-*Submit patches*
+**Submit patches**
 
 Patches are gladly welcome from their original author. Along with any patches, please state that the patch is your original work
 and that you license the work to the Bytecask project under the Apache 2.0 or a compatible license.
