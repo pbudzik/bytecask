@@ -1,0 +1,36 @@
+First minor release of Bytecask.
+Compiled with sbt 0.11.2 and Scala 2.9.1.
+
+The API consists of the following methods:
+
+    def put(key: Array[Byte], value: Array[Byte])
+
+    def get(key: Array[Byte]): Option[Array[Byte]]
+
+    def delete(key: Array[Byte]): Option[Array[Byte]]
+
+    def keys(): Set[Array[Byte]]
+
+    def values(): Iterator[Array[Byte]]
+
+    def merge(): Unit
+
+    def close(): Unit
+
+    def destroy(): Unit
+
+Sample usage:
+
+    val db = new Bytecask("/home/foo/db")
+    db.put("foo", "bar")
+    val value = db.get("foo")
+    db.delete("foo")
+    db.destroy()
+
+With compression:
+
+    val db = new Bytecask("/home/foo/db", processor = Compressor)
+    db.put("foo", "bar")
+    val value = db.get("foo")
+    db.delete("foo")
+    db.destroy()

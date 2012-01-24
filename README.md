@@ -52,8 +52,9 @@ db.destroy()
 * Data files - files that contain the actual data
 * Merge - depending on update/delete intensity more and more space is occupied, so
 merge operation compacts data as well as merges files into one
-* Hint files - when files are merged to one file a hint file is produced out of the new file being
-a persisted index, so later the index can be rebuilt w/o processing the data file
+* Hint files - when files are merged to one file a "hint file" is produced out of the new file being
+a persisted index, so later the index can be rebuilt w/o processing the data file (however anyway
+can be built)
 
 ### Benchmark ####
 
