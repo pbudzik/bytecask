@@ -15,6 +15,18 @@
 * automatic compaction/merging
 * optimized for Java 1.7
 
+### Install ###
+
+**sbt**
+
+dependencies:
+
+    "com.github.bytecask" %% "bytecask" % "1.0-SNAPSHOT"
+
+repos:
+
+    "oss-snapshots" at "https://oss.sonatype.org/content/groups/public"
+
 ### Example ###
 
 ```scala

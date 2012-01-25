@@ -1,6 +1,6 @@
 import AssemblyKeys._
 
-organization := "bytecask"
+organization := "com.github.bytecask"
 
 name := "bytecask"
 
@@ -33,8 +33,15 @@ scalacOptions ++= Seq(
 
 javacOptions ++= Seq("-source", "1.7")
 
+publishTo <<= (version) { version: String =>
+  val nexus = "https://oss.sonatype.org/content/repositories/"
+  if (version.trim.endsWith("SNAPSHOT"))
+    Some("snapshots" at nexus + "snapshots/")
+  else
+    Some("releases"  at nexus + "releases/")
+}
 
-publishTo := Some(Resolver.file("file",  new File( "/home/przemek/.m2/repository" )) )
+credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")
 
 seq(assemblySettings: _*)
 
