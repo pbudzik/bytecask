@@ -18,7 +18,7 @@
     </appender>
 
     <logger name="org.eclipse" level="INFO"/>
-    <logger name="bytecask" level="DEBUG"/>
+    <logger name="com.github.bytecask" level="INFO"/>
     <logger name="ch.qos" level="OFF" additivity="false"/>
 
     <root>

@@ -19,13 +19,13 @@
 
 **sbt**
 
-dependencies:
+Dependencies:
 
     "com.github.bytecask" %% "bytecask" % "1.0-SNAPSHOT"
 
-repos:
+Repos:
 
-    "oss-snapshots" at "https://oss.sonatype.org/content/groups/public"
+    "sonatype-snapshots" at "https://oss.sonatype.org/content/groups/public"
 
 ### Example ###
 
@@ -58,7 +58,7 @@ db.destroy()
 
   def destroy(): Unit
 ```
-### Dictionary ###
+### Glossary ###
 
 * Index (Keydir) - keys are kept in memory and point to entries in data files
 * Data files - files that contain the actual data
