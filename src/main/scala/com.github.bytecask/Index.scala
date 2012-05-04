@@ -18,12 +18,12 @@
 * Time: 6:05 PM
 */
 
-package bytecask
+package com.github.bytecask
 
 import collection.mutable.Map
 import java.io.File
 
-import bytecask.Utils._
+import com.github.bytecask.Utils._
 
 /*
 Index (aka Keydir)- keeps position and length of entry in a file

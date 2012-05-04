@@ -18,13 +18,13 @@
 * Time: 6:01 PM
 */
 
-package bytecask
+package com.github.bytecask
 
 import org.xerial.snappy.Snappy
 import java.util.concurrent.atomic.AtomicLong
-import bytecask.Files.RichReader
+import com.github.bytecask.Files.RichReader
 import java.io.{RandomAccessFile, IOException, File}
-import bytecask.Utils.RichIndexEntry
+import com.github.bytecask.Utils.RichIndexEntry
 
 object Utils {
 

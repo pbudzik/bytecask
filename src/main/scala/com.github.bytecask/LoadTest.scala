@@ -24,87 +24,25 @@ import bytecask.Utils._
 import bytecask.Bytes._
 import bytecask.Files._
 import util.Random
+import bytecask.Bytecask
 
-object Benchmark {
-
-  /**
-   *   Warning: it is writing to a temp directory!
-   */
+object LoadTest {
 
   def main(args: Array[String]) {
-    b1()
-    b2()
-    b3()
-    b4()
-  }
-
-  def b1() {
-    println("\n--- Benchmark 1 - small values...\n")
-    val dir = mkTempDir
-    val db = new Bytecask(dir)
+    val dir = "/media/ext/tmp/benchmark_" + now
+    val db = new Bytecask(dir, maxFileSize = 500 * 1024)
     warmup(db)
-    putAndGet(db, 128)
+    for (i <- 1.to(5000))
+      putAndGet(db)
     println(db.stats())
     db.destroy()
   }
 
-  def b2() {
-    println("\n--- Benchmark 2 - big values...\n")
-    val dir = mkTempDir
-    val db = new Bytecask(dir)
-    warmup(db)
-    putAndGet(db, 1024 * 64)
-    println(db.stats())
-    db.destroy()
-  }
-
-  def b3() {
-    println("\n--- Benchmark 3 (splitting)...\n")
-    val dir = mkTempDir
-    val db = new Bytecask(dir, maxFileSize = 1024 * 20)
-    val n = 100
-    val length = 2048
-    val bytes = randomBytes(length)
-    throughput("sequential put of different %s items w/ frequent splits".format(n), n, n * length) {
-      for (i <- 1 to n) db.put("k" + i, bytes)
-    }
-    println("Fetching entries... ")
-    for (i <- 1 to n) db.get("k" + i).get
-    println("Files in db's directory: %s".format(collToString(ls(dir).map(_.getName))))
-    println(db.stats())
-    db.destroy()
-  }
-
-  def b4() {
-    println("\n--- Benchmark 3 (merging)...\n")
-    val dir = mkTempDir.getAbsolutePath
-    val db = new Bytecask(dir, maxFileSize = 1024 * 10)
-    val n = 100
-    val length = 2048
-    val bytes = randomBytes(length)
-    throughput("sequential put of different %s items w/ frequent splits".format(n), n, n * length) {
-      for (i <- 1 to n) db.put("k" + i, bytes)
-    }
-    val random = new Random(now)
-    println("sequential delete of random %s items".format(20))
-    for (i <- 1 to n) db.delete("k" + random.nextInt(100))
-    println("sequential over-put of random %s items".format(20))
-    for (i <- 1 to n) db.put("k" + random.nextInt(100), "foo")
-    println("Files in db's directory: %s".format(collToString(ls(dir).map(_.getName))))
-    val s0 = dirSize(dir)
-    println("Directory size: %s bytes".format(s0))
-    db.merge()
-    val s1 = dirSize(dir)
-    println("Directory size: %s bytes".format(s1))
-    println("Reduction: %s | %s -> %3.2f".format(s0, s1, 100 - ((s1 * 1.0) / s0) * 100.0) + "%")
-    println(db.stats())
-    db.destroy()
-  }
-
-  private def putAndGet(db: Bytecask, valueSize: Int) {
+  private def putAndGet(db: Bytecask) {
     println("+ db: %s\n".format(db))
+    val random = new Random(now)
     val n = 10000
-    val length = valueSize
+    val length = random.nextInt(2048) + 1
     val bytes = randomBytes(length)
     throughput("sequential put of different %s items".format(n), n, n * length) {
       for (i <- 1 to n) db.put("key_" + i, bytes)
@@ -145,4 +83,5 @@ object Benchmark {
     for (i <- 1 to 1000) db.put("test_key" + i, bytes)
     for (i <- 1 to 1000) db.get("test_key" + i)
   }
+
 }

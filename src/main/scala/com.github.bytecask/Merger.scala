@@ -18,7 +18,7 @@
 * Time: 9:45 PM
 */
 
-package bytecask
+package com.github.bytecask
 
 import collection.mutable.Map
 import java.util.concurrent.atomic.{AtomicLong, AtomicInteger}
@@ -33,7 +33,7 @@ final class Merger(io: IO, index: Index) extends Logging {
   val lastMerge = new AtomicLong
   val changes = Map[String, Delta]()
 
-  import bytecask.Utils._
+  import com.github.bytecask.Utils._
 
   def entryChanged(entry: IndexEntry) {
     changes.synchronized {

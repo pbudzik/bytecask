@@ -14,26 +14,36 @@
 * limitations under the License.
 *
 * User: przemek
-* Date: 1/10/12
-* Time: 7:53 PM
+* Date: 1/11/12
+* Time: 9:00 PM
 */
 
-package bytecask
+package com.github.bytecask
 
-import java.util.concurrent.{TimeUnit, Executors}
+import java.util.concurrent.locks.ReentrantReadWriteLock
 
-trait TestSupport {
+trait Locking {
+  val lock = new ReentrantReadWriteLock()
+  val read = lock.readLock()
+  val write = lock.writeLock()
 
-  def concurrently(threads: Int, iters: Int = 1, timeout: Int = 5)(f: Int => Any) {
-    val pool = Executors.newFixedThreadPool(threads)
-    for (i <- 1.to(iters))
-      pool.execute(new Runnable() {
-        override def run() {
-          f(i)
-        }
-      })
-    pool.shutdown()
-    pool.awaitTermination(timeout, TimeUnit.SECONDS)
+  def readLock[T](f: => T): T = {
+    read.lock()
+    try {
+      f
+    }
+    finally {
+      read.unlock()
+    }
   }
 
+  def writeLock[T](f: => T): T = {
+    write.lock()
+    try {
+      f
+    }
+    finally {
+      write.unlock()
+    }
+  }
 }
