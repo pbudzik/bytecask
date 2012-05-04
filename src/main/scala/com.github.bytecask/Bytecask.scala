@@ -18,12 +18,12 @@
 * Time: 5:57 PM
 */
 
-package bytecask
+package com.github.bytecask
 
-import bytecask.Utils._
+import com.github.bytecask.Utils._
 import management.ManagementFactory
 import javax.management.ObjectName
-import bytecask.Bytes._
+import com.github.bytecask.Bytes._
 import java.util.concurrent.atomic.AtomicInteger
 
 class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSize: Long = IO.DEFAULT_MAX_FILE_SIZE,

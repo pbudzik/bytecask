@@ -1,5 +1,3 @@
-package bytecask
-
 /*
 * Copyright 2011 P.Budzik
 *
@@ -19,10 +17,11 @@ package bytecask
 * Date: 1/8/12
 * Time: 9:50 AM
 */
+package com.github.bytecask
 
-import bytecask.Utils._
-import bytecask.Bytes._
-import bytecask.Files._
+import com.github.bytecask.Utils._
+import com.github.bytecask.Bytes._
+import com.github.bytecask.Files._
 import util.Random
 
 object Benchmark {

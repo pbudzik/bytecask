@@ -18,7 +18,7 @@
 * Time: 6:05 PM
 */
 
-package bytecask
+package com.github.bytecask
 
 import org.slf4j.LoggerFactory
 

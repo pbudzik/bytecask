@@ -18,7 +18,7 @@
 * Time: 3:37 PM
 */
 
-package bytecask
+package com.github.bytecask
 
 import java.util.concurrent.{ConcurrentHashMap, TimeUnit, ConcurrentLinkedQueue, Semaphore}
 import java.io.RandomAccessFile

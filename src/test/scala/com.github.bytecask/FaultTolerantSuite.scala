@@ -1,5 +1,3 @@
-package bytecask
-
 /*
 * Copyright 2011 P.Budzik
 *
@@ -20,32 +18,34 @@ package bytecask
 * Time: 12:07 PM
 */
 
+package com.github.bytecask
+
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.{BeforeAndAfterEach, FunSuite}
 
-import bytecask.Utils._
-import bytecask.Bytes._
-import bytecask.Files._
+import com.github.bytecask.Utils._
+import com.github.bytecask.Bytes._
+import com.github.bytecask.Files._
+import java.io.RandomAccessFile
 
-class IndexSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
+class FaultTolerantSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach with TestSupport {
 
-  test("index rebuild") {
+  test("corrupted file during indexing - read until error") {
     val dir = mkTempDir
     var db = new Bytecask(dir)
-    db.put("foo", "bar")
-    db.put("baz", "tar")
-    db.put("bav", "arc")
-    db.put("bav", "arv")
-    db.count() should be(3)
-    string(db.get("bav").get) should be("arv")
-    db.delete("baz")
+    db.put("1", randomBytes(1024))
+    db.put("2", randomBytes(1024))
     db.close()
+    val raf = new RandomAccessFile(ls(dir).head, "rw")
+    raf.seek(1024 + 32)
+    raf.write(randomBytes(128))
+    raf.close()
     db = new Bytecask(dir)
-    println("index: " + db.index.getIndex)
-    db.count() should be(2)
-    assert(db.get("baz").isEmpty)
-    string(db.get("bav").get) should be("arv")
+    db.index.size should be(1)
+    assert(!db.get("1").isEmpty)
+    db.index.errorCount() should be(1)
     db.destroy()
   }
+
 
 }

@@ -18,7 +18,7 @@
 * Time: 9:00 PM
 */
 
-package bytecask
+package com.github.bytecask
 
 import java.util.concurrent.atomic.AtomicInteger
 

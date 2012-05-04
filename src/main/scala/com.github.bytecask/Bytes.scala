@@ -18,7 +18,7 @@
 * Time: 5:50 PM
 */
 
-package bytecask
+package com.github.bytecask
 
 import java.util.Arrays
 

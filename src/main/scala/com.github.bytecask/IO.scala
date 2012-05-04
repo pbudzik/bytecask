@@ -18,14 +18,14 @@
 * Time: 5:58 PM
 */
 
-package bytecask
+package com.github.bytecask
 
 import java.util.concurrent.atomic.AtomicInteger
 import java.io._
 
-import bytecask.Utils._
+import com.github.bytecask.Utils._
 import java.nio.ByteBuffer
-import bytecask.Files.richReader
+import com.github.bytecask.Files.richReader
 import java.util.zip.Adler32
 
 object IO extends Logging {

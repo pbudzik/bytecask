@@ -14,26 +14,26 @@
 * limitations under the License.
 *
 * User: przemek
-* Date: 1/10/12
-* Time: 7:53 PM
+* Date: 5/3/12
+* Time: 10:57 AM
 */
 
-package bytecask
+package com.github.bytecask
 
-import java.util.concurrent.{TimeUnit, Executors}
+import collection.mutable.ArrayBuffer
 
-trait TestSupport {
+class RadixTreeNode[T](var key: String = "", var value: Option[T] = None, var children: ArrayBuffer[RadixTreeNode[T]] = ArrayBuffer[RadixTreeNode[T]]()) {
 
-  def concurrently(threads: Int, iters: Int = 1, timeout: Int = 5)(f: Int => Any) {
-    val pool = Executors.newFixedThreadPool(threads)
-    for (i <- 1.to(iters))
-      pool.execute(new Runnable() {
-        override def run() {
-          f(i)
-        }
-      })
-    pool.shutdown()
-    pool.awaitTermination(timeout, TimeUnit.SECONDS)
+  def isVirtual = value.isEmpty
+
+  def isRoot = (key == "")
+
+  def setVirtual() {
+    value = None
   }
+
+  def longestCommonPrefix(prefix: String) = (prefix, key).zipped.takeWhile(Function.tupled(_ == _)).size
+
+  override def toString = key
 
 }

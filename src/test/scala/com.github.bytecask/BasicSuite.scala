@@ -18,14 +18,14 @@
 * Time: 12:07 PM
 */
 
-package bytecask
+package com.github.bytecask
 
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.{BeforeAndAfterEach, FunSuite}
 
-import bytecask.Utils._
-import bytecask.Bytes._
-import bytecask.Files._
+import com.github.bytecask.Utils._
+import com.github.bytecask.Bytes._
+import com.github.bytecask.Files._
 
 class BasicSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
 
