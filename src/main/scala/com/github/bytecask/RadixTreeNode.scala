@@ -38,4 +38,5 @@ class RadixTreeNode[T](var key: String = "", var value: Option[T] = None, var ch
   override def toString = key
 
   override def hashCode = Objects.hashCode(classOf[RadixTreeNode[T]], key)
+
 }
