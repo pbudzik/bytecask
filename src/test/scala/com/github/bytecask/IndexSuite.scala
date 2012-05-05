@@ -41,7 +41,7 @@ class IndexSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
     db.delete("baz")
     db.close()
     db = new Bytecask(dir)
-    println("index: " + db.index.getIndex)
+    println("index: " + db.index.getMap)
     db.count() should be(2)
     assert(db.get("baz").isEmpty)
     string(db.get("bav").get) should be("arv")

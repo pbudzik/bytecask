@@ -27,7 +27,7 @@ import com.github.bytecask.Utils._
 import com.github.bytecask.Bytes._
 import com.github.bytecask.Files._
 
-class BasicSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
+class BasicPrefixedKeysSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
 
   test("basic ops") {
     val db = new Bytecask(mkTempDir)
@@ -84,37 +84,37 @@ class BasicSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
   }
 
   test("split") {
-    val dir = mkTempDir
-    var db = new Bytecask(dir, maxFileSize = 1024)
-    db.put("foo", randomBytes(4096))
+     val dir = mkTempDir
+     var db = new Bytecask(dir, maxFileSize = 1024)
+     db.put("foo", randomBytes(4096))
 
-    db.count() should be(1)
-    println("*** " + ls(dir).map(_.getName).toList)
+     db.count() should be(1)
+     println("*** " + ls(dir).map(_.getName).toList)
 
-    db.close()
+     db.close()
 
-    ls(dir).size should be(2)
+     ls(dir).size should be(2)
 
-    db = new Bytecask(dir, maxFileSize = 1024)
-    println("*** " + ls(dir).map(_.getName).toList)
-    println("*** " + db.index.getMap)
+     db = new Bytecask(dir, maxFileSize = 1024)
+     println("*** " + ls(dir).map(_.getName).toList)
+     println("*** " + db.index.getMap)
 
-    println(db.get("foo"))
+     println(db.get("foo"))
 
-    db.put("bar", randomBytes(4096))
+     db.put("bar", randomBytes(4096))
 
-    db.close()
+     db.close()
 
-    ls(dir).size should be(3)
+     ls(dir).size should be(3)
 
-    db = new Bytecask(dir, maxFileSize = 1024)
+     db = new Bytecask(dir, maxFileSize = 1024)
 
-    println("*** " + ls(dir).map(_.getName).toList)
-    println("*** " + db.index.getMap)
+     println("*** " + ls(dir).map(_.getName).toList)
+     println("*** " + db.index.getMap)
 
-    println(db.get("bar"))
+     println(db.get("bar"))
 
-    db.destroy()
-  }
+     db.destroy()
+   }
 
 }

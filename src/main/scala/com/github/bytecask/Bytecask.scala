@@ -28,12 +28,12 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSize: Long = IO.DEFAULT_MAX_FILE_SIZE,
                processor: ValueProcessor = PassThru, autoMerge: Boolean = false, jmx: Boolean = true,
-               maxConcurrentReaders: Int = 10)
+               maxConcurrentReaders: Int = 10, prefixedKeys: Boolean = false)
   extends Logging {
   val createdAt = System.currentTimeMillis()
   mkDirIfNeeded(dir)
   val io = new IO(dir, maxConcurrentReaders)
-  val index = new Index(io)
+  val index = new Index(io, prefixedKeys)
   val splits = new AtomicInteger
   lazy val merger = new Merger(io, index)
   val TOMBSTONE_VALUE = Bytes.EMPTY
@@ -45,8 +45,8 @@ class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSiz
   }
 
   def put(key: Array[Byte], value: Array[Byte]) {
-    checkArgument(key.length > 0, "Key cannot be empty")
-    checkArgument(value.length > 0, "Value cannot be empty")
+    checkArgument(key.length > 0, "Key must not be empty")
+    checkArgument(value.length > 0, "Value must not empty")
     val entry = index.get(key)
     io.synchronized {
       val (pos, length, timestamp) = io.appendDataEntry(key, processor.before(value))
@@ -57,13 +57,13 @@ class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSiz
   }
 
   def get(key: Array[Byte]) = {
-    checkArgument(key.length > 0, "Key cannot be empty")
+    checkArgument(key.length > 0, "Key must not be empty")
     val entry = index.get(key)
     if (!entry.isEmpty) processor.after(Some(io.readValue(entry.get))) else None
   }
 
   def delete(key: Array[Byte]) = {
-    checkArgument(key.length > 0, "Key cannot be empty")
+    checkArgument(key.length > 0, "Key must not be empty")
     val entry = index.get(key)
     if (!entry.isEmpty) {
       io.appendDataEntry(key, TOMBSTONE_VALUE)

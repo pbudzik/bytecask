@@ -23,6 +23,12 @@ package com.github.bytecask
 import util.control.Breaks._
 import collection.mutable.{Queue, ArrayBuffer}
 
+/*
+ * Scala implementation of Radix Tree: http://en.wikipedia.org/wiki/Radix_tree
+ *
+ * It is not optimized yet. Might be derecursivated.
+ */
+
 class RadixTree[T] {
   val root = new RadixTreeNode[T]()
   var size = 0
@@ -93,7 +99,6 @@ class RadixTree[T] {
         node.children.append(n0)
       }
     } else if (matched == key.length() && matched == node.key.length()) {
-      if (!node.isVirtual) throw new IllegalArgumentException("Key already exists: " + key)
       node.value = Some(value)
     } else if (matched > 0 && matched < node.key.length()) {
       val n1 = new RadixTreeNode[T](node.key.substring(matched, node.key.length), node.value, node.children.clone())
@@ -152,6 +157,55 @@ class RadixTree[T] {
     }
     size
   }
+
+  override def toString = {
+    val queue = Queue[(RadixTreeNode[T], String)]()
+    queue.enqueue((root, ""))
+    val sb = new StringBuilder
+    while (queue.nonEmpty) {
+      val (node, key) = queue.dequeue()
+      if (!node.isVirtual)
+        sb.append(key + node.key).append(" -> ").append(node.value).append("\n")
+      node.children.foreach(child => queue.enqueue((child, key + node.key)))
+    }
+    sb.toString()
+  }
+
+  def iterator = new Iterator[(String, T)] {
+    val queue = Queue[(RadixTreeNode[T], String)]()
+    queue.enqueue((root, ""))
+
+    def next() = {
+      @inline
+      def walk: (String, T) = {
+        val (node, key) = queue.dequeue()
+        node.children.foreach(child => queue.enqueue((child, key + node.key)))
+        if (node.isVirtual)
+          walk
+        else
+          (key + node.key, node.value.get)
+      }
+      walk
+    }
+
+    def hasNext = if (getSize > 0) !queue.isEmpty else false
+  }
+
+}
+
+class RadixTreeNode[T](var key: String = "", var value: Option[T] = None, var children: ArrayBuffer[RadixTreeNode[T]] = ArrayBuffer[RadixTreeNode[T]]()) {
+
+  def isVirtual = value.isEmpty
+
+  def isRoot = (key == "")
+
+  def setVirtual() {
+    value = None
+  }
+
+  def longestCommonPrefix(prefix: String) = (prefix, key).zipped.takeWhile(Function.tupled(_ == _)).size
+
+  override def toString = key
 
 }
 
