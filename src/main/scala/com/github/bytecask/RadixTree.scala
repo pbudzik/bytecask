@@ -30,12 +30,6 @@ import annotation.tailrec
  * It is also not optimized yet. Might be derecursivated.
  */
 
-/*
- * Scala implementation of Radix Tree: http://en.wikipedia.org/wiki/Radix_tree
- *
- * It is not optimized yet. Might be derecursivated.
- */
-
 class RadixTree[T] {
   val root = new RadixTreeNode[T]()
   var size = 0
