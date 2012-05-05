@@ -80,7 +80,7 @@ final class Merger(io: IO, index: Index) extends Logging {
           if (!subIndex.isEmpty)
             index.synchronized {
               for ((key, indexEntry) <- subIndex) {
-                index.getIndex.put(key, indexEntry)
+                index.getMap.put(key, indexEntry)
                 IO.appendHintEntry(appender, indexEntry.timestamp, key.length, indexEntry.length - 15, indexEntry.pos, key)
               }
               files.foreach(changes.remove(_))
@@ -96,8 +96,8 @@ final class Merger(io: IO, index: Index) extends Logging {
   }
 
   private def replaceFile(a: String, b: String) {
-    for ((k, v) <- index.getIndex) {
-      if (v.file == a) index.getIndex.put(k, IndexEntry(b, v.pos, v.length, v.timestamp))
+    for ((k, v) <- index.getMap) {
+      if (v.file == a) index.getMap.put(k, IndexEntry(b, v.pos, v.length, v.timestamp))
     }
   }
 

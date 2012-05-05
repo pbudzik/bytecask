@@ -54,4 +54,18 @@ class CompressSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach
     db.destroy()
   }
 
+  test("basic ops with compression and prefixed keys") {
+    val db = new Bytecask(mkTempDir, processor = Compressor, prefixedKeys = true)
+    db.put("foo", "bar")
+    db.put("baz", "boo")
+    string(db.get("foo").get) should be("bar")
+    string(db.get("baz").get) should be("boo")
+    println(db.keys.map(string(_)))
+    println(db.index.getMap)
+    db.keys().map(string(_)) should be(Set("foo", "baz"))
+    db.values().size should be(2)
+    db.delete("foo")
+    db.get("foo") should be(None)
+    db.destroy()
+  }
 }

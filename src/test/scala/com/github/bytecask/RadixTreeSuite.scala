@@ -35,6 +35,7 @@ class RadixTreeSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEac
     tree.insert("foo/a", 2)
     tree.insert("foo/b", 3)
     assert(tree.getTotalKeysSize == 8)
+    println(tree.toString)
   }
 
   test("insert, find") {
@@ -46,6 +47,14 @@ class RadixTreeSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEac
     tree.insert("foobar", 3)
 
     assert(tree.find("foo") == Some(1))
+    assert(tree.find("fooa") == Some(2))
+    assert(tree.find("foobar") == Some(3))
+    assert(tree.find("fooc") == Some(4))
+    assert(tree.find("food") == Some(11))
+    assert(tree.find("xoooo") == None)
+
+    tree.insert("foo", 0)
+    assert(tree.find("foo") == Some(0))
     assert(tree.find("fooa") == Some(2))
     assert(tree.find("foobar") == Some(3))
     assert(tree.find("fooc") == Some(4))
@@ -78,6 +87,19 @@ class RadixTreeSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEac
     tree.delete("/var/mail")
     assert(tree.find("/var/mail").isEmpty)
     assert(!tree.find("/var/lib/dkms/fglrx/8.881/3.0.0-12-generic/x86_64/module").isEmpty)
+  }
+
+  test("iterator") {
+    tree.insert("foo", 1)
+    tree.insert("foo/d", 11)
+    tree.insert("foo/c", 4)
+    tree.insert("foo/a", 2)
+    tree.insert("foo/b", 3)
+    for ((k, v) <- tree.iterator) {
+      assert(!k.isEmpty)
+      assert(v > 0)
+      println("k: " + k + ", v: " + v)
+    }
   }
 
   override def beforeEach() {

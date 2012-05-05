@@ -29,9 +29,9 @@ import com.github.bytecask.Utils._
 Index (aka Keydir)- keeps position and length of entry in a file
  */
 
-final class Index(io: IO) extends Logging with Locking with Tracking {
+final class Index(io: IO, prefixedKeys: Boolean = false) extends Logging with Locking with Tracking {
 
-  private val index = Map[Bytes, IndexEntry]()
+  val indexMap = if (prefixedKeys) new RadixTreeIndexMap() else Map[Bytes, IndexEntry]()
 
   def init() {
     debug("Initializing index...")
@@ -49,53 +49,53 @@ final class Index(io: IO) extends Logging with Locking with Tracking {
 
   private def processDataEntry(file: File, entry: DataEntry) = writeLock {
     if (entry.valueSize == 0)
-      index.remove(entry.key)
+      indexMap.remove(entry.key)
     else
-      index.put(entry.key, IndexEntry(file.getName, entry.pos, entry.size, entry.timestamp))
+      indexMap.put(entry.key, IndexEntry(file.getName, entry.pos, entry.size, entry.timestamp))
   }
 
   private def processHintEntry(file: File, entry: HintEntry) = writeLock {
     if (entry.valueSize == 0)
-      index.remove(entry.key)
+      indexMap.remove(entry.key)
     else
-      index.put(entry.key, IndexEntry(file.getName, entry.pos, entry.size, entry.timestamp))
+      indexMap.put(entry.key, IndexEntry(file.getName, entry.pos, entry.size, entry.timestamp))
   }
 
   def update(key: Bytes, pos: Int, length: Int, timestamp: Int) = writeLock {
-    index.put(key, IndexEntry(IO.ACTIVE_FILE_NAME, pos, length, timestamp))
+    indexMap.put(key, IndexEntry(IO.ACTIVE_FILE_NAME, pos, length, timestamp))
   }
 
   def get(key: Bytes) = readLock {
-    index.get(key)
+    indexMap.get(key)
   }
 
   def delete(key: Bytes) = writeLock {
-    index.remove(key)
+    indexMap.remove(key)
   }
 
   def postSplit(file: String) {
     writeLock {
-      for ((key, entry) <- index) {
+      for ((key, entry) <- indexMap) {
         if (entry.isActive) {
-          index.put(key, IndexEntry(file, entry.pos, entry.length, entry.timestamp))
+          indexMap.put(key, IndexEntry(file, entry.pos, entry.length, entry.timestamp))
         }
       }
     }
   }
 
   def hasEntry(entry: DataEntry) = {
-    val e = index.get(entry.key)
+    val e = indexMap.get(entry.key)
     //debug("hasEntry: " + e + " -> " + entry)
     !e.isEmpty && e.get.timestamp == entry.timestamp
   }
 
-   def contains(key: Bytes) = index.contains(key)
+  def contains(key: Bytes) = indexMap.contains(key)
 
-  def size = index.size
+  def size = indexMap.size
 
-  def keys = index.keys
+  def keys = indexMap.keys
 
-  def getIndex = index
+  def getMap = indexMap
 }
 
 final case class IndexEntry(file: String, pos: Int, length: Int, timestamp: Int)
