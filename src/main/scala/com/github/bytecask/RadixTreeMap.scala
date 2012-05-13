@@ -24,9 +24,10 @@ import collection.mutable.Map
 import com.github.bytecask.Bytes._
 
 /**
- * Map to be a drop in replacement for the regular one used by the index.
+ * Map implementation to be a drop-in replacement for the regular one used by the index.
  * Backed by RadixTree, so if keys are prefixed strings it can save a lot of
- * space taken by keys. Good for cases when keys are i.e. directories/files, IP addresses etc.
+ * space taken by keys. Keys are kept as paths in a tree sharing common prefxes to avoid redundancy.
+ * Good for cases when keys are i.e. directories/files, IP addresses etc.
  *
  * It is not optimized yet.
  *

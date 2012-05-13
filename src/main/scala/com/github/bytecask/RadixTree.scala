@@ -125,7 +125,6 @@ class RadixTree[T] {
     visit(key, visitor, null, root)
   }
 
-  @inline
   private def visit[R](prefix: String, visitor: Visitor[T, R], parent: RadixTreeNode[T], node: RadixTreeNode[T]) {
     val matched = node.longestCommonPrefix(prefix)
     if (matched == prefix.length() && matched == node.key.length()) {

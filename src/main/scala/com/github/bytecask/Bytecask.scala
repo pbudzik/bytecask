@@ -69,7 +69,7 @@ class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSiz
       io.appendDataEntry(key, TOMBSTONE_VALUE)
       index.delete(key)
       if (entry.get.isInactive) merger.entryChanged(entry.get)
-      Some(entry)
+      entry
     } else None
   }
 
