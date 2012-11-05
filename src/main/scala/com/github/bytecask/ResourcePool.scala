@@ -41,18 +41,19 @@ abstract class ResourcePool[T <: {def close()}](maxResources: Int) {
 
   def get(maxWaitMillis: Long): T = {
     semaphore.tryAcquire(maxWaitMillis, TimeUnit.MILLISECONDS)
-    var resource = resources.poll()
-    if (resource == null) {
-      try {
-        resource = createResource()
-      } catch {
-        case e: Exception => throw new RuntimeException("Cannot create resource", e)
-      }
-      finally {
-        semaphore.release()
+    resources.poll() match {
+      case r: T => r
+      case _ => {
+        try {
+          createResource()
+        } catch {
+          case e: Exception => throw new RuntimeException("Cannot create resource", e)
+        }
+        finally {
+          semaphore.release()
+        }
       }
     }
-    resource
   }
 
   def release(resource: T) {
@@ -70,12 +71,15 @@ abstract class FileReadersPool[T <: {def close()}](maxReaders: Int) {
   private val cache = new ConcurrentHashMap[String, ResourcePool[T]]()
 
   def get(file: String): T = {
-    var pool = cache.get(file)
-    if (pool == null) {
-      pool = new ResourcePool[T](maxReaders) {
-        def createResource() = createReader(file)
+    val pool = cache.get(file) match {
+      case pool: ResourcePool[T] => pool
+      case _ => {
+        val pool = new ResourcePool[T](maxReaders) {
+          def createResource() = createReader(file)
+        }
+        cache.put(file, pool)
+        pool
       }
-      cache.put(file, pool)
     }
     pool.get(1000)
   }
@@ -87,10 +91,10 @@ abstract class FileReadersPool[T <: {def close()}](maxReaders: Int) {
   def createReader(file: String): T
 
   def invalidate(file: String) {
-    val pool = cache.get(file)
-    if (pool != null)
-      pool.destroy()
-    cache.remove(file)
+    cache.get(file) match {
+      case pool: ResourcePool[T] => pool.destroy()
+      case _ => cache.remove(file)
+    }
   }
 
   def destroy() {
@@ -107,11 +111,12 @@ class RandomAccessFilePool(maxFiles: Int) extends FileReadersPool[RandomAccessFi
   def createReader(file: String) = new RandomAccessFile(file, "r")
 
   override def get(file: String) = {
-    val reader = super.get(file)
-    if (!reader.getChannel.isOpen) {
-      invalidate(file)
-      get(file)
-    } else
-      reader
+    super.get(file) match {
+      case reader if !reader.getChannel.isOpen => {
+        invalidate(file)
+        get(file)
+      }
+      case reader => reader
+    }
   }
 }

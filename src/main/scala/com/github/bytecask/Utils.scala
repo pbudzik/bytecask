@@ -45,16 +45,14 @@ object Utils {
   //    adler32.getValue.toInt
   //  }
 
-  def collToString(col: Iterable[Any]) = {
-    "[" + col.mkString(",") + "]"
-  }
+  def collToString(col: Iterable[Any]) = col mkString("[", ",", "]")
 
   def randomBytes(k: Int) = Bytes(randomString(k))
 
   def randomString(k: Int) = {
     val chars = ('a' to 'z') ++ ('A' to 'Z') ++ ('0' to '9')
     def s: Stream[Char] = Stream.cons(chars(util.Random.nextInt(chars.size)), s)
-    (s take k).mkString
+    (s take k) mkString
   }
 
   def rmdir(dir: String) {

@@ -83,7 +83,7 @@ final class Merger(io: IO, index: Index) extends Logging {
                 index.getMap.put(key, indexEntry)
                 IO.appendHintEntry(appender, indexEntry.timestamp, key.length, indexEntry.length - 15, indexEntry.pos, key)
               }
-              files.foreach(changes.remove(_))
+              files.foreach(changes.remove)
               files.foreach(file => io.delete(dbFile(file)))
               index.synchronized(files.foreach(file => replaceFile(file, target)))
               tmp.renameTo(dbFile(target))

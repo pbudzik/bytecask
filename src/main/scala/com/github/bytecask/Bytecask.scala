@@ -46,11 +46,11 @@ class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSiz
 
   def put(key: Array[Byte], value: Array[Byte]) {
     checkArgument(key.length > 0, "Key must not be empty")
-    checkArgument(value.length > 0, "Value must not empty")
+    checkArgument(value.length > 0, "Value must not be empty")
     val entry = index.get(key)
     io.synchronized {
       val (pos, length, timestamp) = io.appendDataEntry(key, processor.before(value))
-      if (!entry.isEmpty && entry.get.isInactive) merger.entryChanged(entry.get)
+      if (entry.nonEmpty && entry.get.isInactive) merger.entryChanged(entry.get)
       index.update(key, pos, length, timestamp)
       if (io.pos > maxFileSize) split()
     }
@@ -58,19 +58,23 @@ class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSiz
 
   def get(key: Array[Byte]) = {
     checkArgument(key.length > 0, "Key must not be empty")
-    val entry = index.get(key)
-    if (!entry.isEmpty) processor.after(Some(io.readValue(entry.get))) else None
+    index.get(key) match {
+      case Some(entry) => processor.after(Some(io.readValue(entry)))
+      case _ => None
+    }
   }
 
   def delete(key: Array[Byte]) = {
     checkArgument(key.length > 0, "Key must not be empty")
-    val entry = index.get(key)
-    if (!entry.isEmpty) {
-      io.appendDataEntry(key, TOMBSTONE_VALUE)
-      index.delete(key)
-      if (entry.get.isInactive) merger.entryChanged(entry.get)
-      entry
-    } else None
+    index.get(key) match {
+      case Some(entry) => {
+        io.appendDataEntry(key, TOMBSTONE_VALUE)
+        index.delete(key)
+        if (entry.isInactive) merger.entryChanged(entry)
+        entry
+      }
+      case _ => None
+    }
   }
 
   def close() {

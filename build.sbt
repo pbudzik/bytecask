@@ -6,7 +6,7 @@ name := "bytecask"
 
 version := "1.0-SNAPSHOT"
 
-scalaVersion := "2.9.1"
+scalaVersion := "2.9.2"
 
 resolvers ++= Seq(
   "typesafe" at "http://repo.typesafe.com/typesafe/releases/",
@@ -20,7 +20,6 @@ libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % "0.9.30" % "compile",
   "org.xerial.snappy" % "snappy-java" % "1.0.4.1",
   "com.google.guava" % "guava" % "10.0.1",
-  "org.scala-tools.testing" %% "scalacheck" % "1.9" % "test",
   "org.scalatest" %% "scalatest" % "1.6.1"% "test"
 )
 

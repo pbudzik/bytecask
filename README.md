@@ -5,6 +5,7 @@
 * storage component for distributed NoSQL databases
 * inspired by [Bitcask](https://github.com/basho/bitcask) (Erlang)
 * optional fast compression (backed by [snappy-java](http://code.google.com/p/snappy-java/))
+* optional Radix Tree support for keys
 * Apache 2.0 License
 
 ### Key properties: ###

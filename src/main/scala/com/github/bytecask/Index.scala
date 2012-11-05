@@ -35,7 +35,7 @@ final class Index(io: IO, prefixedKeys: Boolean = false) extends Logging with Lo
 
   def init() {
     debug("Initializing index...")
-    if (ls(io.dir).toList.filter(_.length() > 0).map(indexFile(_)).filter(!_).size > 0) incErrors
+    if (ls(io.dir).toList.filter(_.length() > 0).map(indexFile).filter(!_).size > 0) incErrors
   }
 
   private def hintFile(file: File) = (file.getAbsolutePath + "h").mkFile
@@ -86,7 +86,7 @@ final class Index(io: IO, prefixedKeys: Boolean = false) extends Logging with Lo
   def hasEntry(entry: DataEntry) = {
     val e = indexMap.get(entry.key)
     //debug("hasEntry: " + e + " -> " + entry)
-    !e.isEmpty && e.get.timestamp == entry.timestamp
+    e.nonEmpty && e.get.timestamp == entry.timestamp
   }
 
   def contains(key: Bytes) = indexMap.contains(key)
