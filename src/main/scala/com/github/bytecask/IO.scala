@@ -35,7 +35,11 @@ object IO extends Logging {
   val DATA_FILE_REGEX = "^[0-9]+$"
 
   def appendDataEntry(appender: RandomAccessFile, key: Bytes, value: Bytes) = {
-    val pos = appender.getFilePointer
+    // val pos = appender.getFilePointer
+    // This change fixed a problem when the DB is re-opened, and the file pointer goes back the beginning of the DB file.
+    // The symptom of this issue was the data would corrupt eventually after the DB file was opened and closed a
+    // couple of times.
+		val pos = getFilePointer(appender)
     val timestamp = (Utils.now / 1000).intValue()
     val keySize = key.size
     val valueSize = value.size
@@ -55,6 +59,12 @@ object IO extends Logging {
     (pos.toInt, length, timestamp)
   }
 
+  // Move the file pointer to the end of the DB file for the coming data to be appended after the last recorded data.
+  private def getFilePointer(appender: RandomAccessFile) = {
+    appender.seek(appender.length())
+    appender.getFilePointer
+  }
+	
   def appendHintEntry(appender: RandomAccessFile, timestamp: Int, keySize: Int, valueSize: Int, pos: Int, key: Array[Byte]) {
     val buffer = ByteBuffer.allocate(4 + 2 + 4 + 4 + keySize)
     putInt32(buffer, timestamp, 0)

@@ -1,0 +1,12 @@
+logs
+project/project
+target
+tmp
+.history
+rw_*_db
+.idea
+.idea_modules
+*.log
+project/boot
+project/target
+project/plugins/target
