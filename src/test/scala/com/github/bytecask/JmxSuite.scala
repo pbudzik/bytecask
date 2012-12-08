@@ -24,23 +24,16 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.{BeforeAndAfterEach, FunSuite}
 
 import com.github.bytecask.Utils._
+import com.github.bytecask.Files._
 
-class UtilsSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
+class JmxSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
 
-  test("slot") {
-    firstSlot(Array(1, 2, 3, 5)) should be(Some(4))
-    firstSlot(Array(1, 2, 4, 5)) should be(Some(3))
-    firstSlot(Array(1, 2, 4, 5)) should be(Some(3))
-    firstSlot(Array(1, 15)) should be(Some(2))
-    firstSlot(Array(1, 2, 3, 4)) should be(None)
-  }
-
-  test("dirs") {
-    val dir = mkTempDir.getAbsolutePath
-    assert(dir.mkFile.exists())
-    assert(dirSize(dir) == 0)
-    assert(ls(dir).size == 0)
-    rmdir(dir)
+  test("simple JMX install via trait") {
+    val db = new Bytecask(mkTempDir) with JmxSupport
+    db.jmxInit()
+    //TODO use Jmx client to invoke some method
+    db.jmxDestroy()
+    db.destroy()
   }
 
 }

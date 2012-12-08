@@ -21,15 +21,13 @@
 package com.github.bytecask
 
 import com.github.bytecask.Utils._
-import management.ManagementFactory
-import javax.management.ObjectName
 import com.github.bytecask.Bytes._
 import java.util.concurrent.atomic.AtomicInteger
 
-class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSize: Long = IO.DEFAULT_MAX_FILE_SIZE,
-               processor: ValueProcessor = PassThru, autoMerge: Boolean = false, jmx: Boolean = true,
-               maxConcurrentReaders: Int = 10, prefixedKeys: Boolean = false)
-  extends Logging {
+class Bytecask(val dir: String, val name: String = Utils.randomString(8), maxFileSize: Long = IO.DEFAULT_MAX_FILE_SIZE,
+               processor: ValueProcessor = PassThru, autoMerge: Boolean = false, maxConcurrentReaders: Int = 10,
+               prefixedKeys: Boolean = false) extends Logging {
+  lazy val bytecask = this
   val createdAt = System.currentTimeMillis()
   mkDirIfNeeded(dir)
   val io = new IO(dir, maxConcurrentReaders)
@@ -41,7 +39,6 @@ class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSiz
 
   def init() {
     index.init()
-    if (jmx) jmxInit()
   }
 
   def put(key: Array[Byte], value: Array[Byte]) {
@@ -108,12 +105,6 @@ class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSiz
 
   override def toString = "{name=%s, dir=%s}".format(name, dir)
 
-  def jmxInit() {
-    val server = ManagementFactory.getPlatformMBeanServer
-    val beanName = new ObjectName("Bytecask_" + name + ":type=BytecaskBean")
-    server.registerMBean(new BytecaskJmx(this), beanName)
-  }
-
   def selfCheck() {
     notImplementedYet()
   }
@@ -158,13 +149,4 @@ object Compressor extends ValueProcessor {
 
   @inline def after(b: Option[Bytes]) = Some(uncompress(b.get))
 }
-
-trait BytecaskJmxMBean {
-  def stats(): String
-}
-
-class BytecaskJmx(db: Bytecask) extends BytecaskJmxMBean {
-  def stats() = db.stats()
-}
-
 
