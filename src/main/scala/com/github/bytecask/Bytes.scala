@@ -39,7 +39,7 @@ final class Bytes(val bytes: Array[Byte]) {
 }
 
 object Bytes {
-  val EMPTY = Bytes(Array[Byte]())
+  lazy val EMPTY = Bytes(Array[Byte]())
 
   def apply(bytes: Array[Byte]) = new Bytes(bytes)
 

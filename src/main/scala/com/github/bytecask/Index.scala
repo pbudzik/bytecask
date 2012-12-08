@@ -75,10 +75,8 @@ final class Index(io: IO, prefixedKeys: Boolean = false) extends Logging with Lo
 
   def postSplit(file: String) {
     writeLock {
-      for ((key, entry) <- indexMap) {
-        if (entry.isActive) {
-          indexMap.put(key, IndexEntry(file, entry.pos, entry.length, entry.timestamp))
-        }
+      for ((key, entry) <- indexMap; if (entry.isActive)) {
+        indexMap.put(key, IndexEntry(file, entry.pos, entry.length, entry.timestamp))
       }
     }
   }

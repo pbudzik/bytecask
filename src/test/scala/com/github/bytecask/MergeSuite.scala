@@ -52,7 +52,7 @@ class MergeSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
     assert(db.get("4").isEmpty)
     assert(db.get("5").isEmpty)
     assert(!db.get("1").isEmpty)
-    db.merger.merges.get should be(1)
+    db.merger.mergesCount.get should be(1)
     assert(ls(db.dir).toList.map(_.getName).contains("1h"))
     db.close()
     db = new Bytecask(db.dir)
@@ -107,7 +107,7 @@ class MergeSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
     println("size before: %s, after: %s ".format(s0, s1))
     assert(s1 == s0)
     assert(!db.get("foo").isEmpty)
-    db.merger.merges.get should be(0)
+    db.merger.mergesCount.get should be(0)
     db.destroy()
   }
 

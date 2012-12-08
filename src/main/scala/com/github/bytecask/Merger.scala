@@ -29,8 +29,8 @@ Merges inactive files to save space.
  */
 
 final class Merger(io: IO, index: Index) extends Logging {
-  val merges = new AtomicInteger
-  val lastMerge = new AtomicLong
+  val mergesCount = new AtomicInteger
+  val lastMerged = new AtomicLong
   val changes = Map[String, Delta]()
 
   import com.github.bytecask.Utils._
@@ -54,7 +54,7 @@ final class Merger(io: IO, index: Index) extends Logging {
   }
 
   /**
-   * Merges files and creates a "hint" file out of the compacted data file
+   * Merges files and creates "hint" file out of the compacted data file
    */
 
   private def merge(files: Iterable[String]) = {
@@ -69,8 +69,7 @@ final class Merger(io: IO, index: Index) extends Logging {
             file => IO.readDataEntries(dbFile(file), (file: File, entry: DataEntry) => {
               if (entry.valueSize > 0 && index.hasEntry(entry)) {
                 val (pos, length, timestamp) = IO.appendDataEntry(appender, entry.key, entry.value)
-                val indexEntry = IndexEntry(file.getName, pos, length, timestamp)
-                subIndex.put(entry.key, indexEntry)
+                subIndex.put(entry.key, IndexEntry(file.getName, pos, length, timestamp))
               }
             })
           }
@@ -88,8 +87,8 @@ final class Merger(io: IO, index: Index) extends Logging {
               index.synchronized(files.foreach(file => replaceFile(file, target)))
               tmp.renameTo(dbFile(target))
               io.delete(tmp)
-              lastMerge.set(now)
-              merges.incrementAndGet()
+              lastMerged.set(now)
+              mergesCount.incrementAndGet()
             }
       }
     }
@@ -113,7 +112,7 @@ final class Merger(io: IO, index: Index) extends Logging {
 }
 
 /*
-Represents a "change measure" for a file - how many entries / how much space
+Represents "change measure" for a file - how many entries / how much space
 is to be potentially regained
  */
 

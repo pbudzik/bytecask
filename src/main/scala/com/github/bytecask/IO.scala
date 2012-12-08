@@ -29,17 +29,15 @@ import com.github.bytecask.Files.richReader
 import java.util.zip.Adler32
 
 object IO extends Logging {
-  val HEADER_SIZE = 14 //crc, ts, ks, vs -> 4 + 4 + 2 + 4 bytes
-  val DEFAULT_MAX_FILE_SIZE = Int.MaxValue // 2GB
+  val HEADER_SIZE = 14
+  //crc, ts, ks, vs -> 4 + 4 + 2 + 4 bytes
+  val DEFAULT_MAX_FILE_SIZE = Int.MaxValue
+  // 2GB
   val ACTIVE_FILE_NAME = "0"
   val DATA_FILE_REGEX = "^[0-9]+$"
 
   def appendDataEntry(appender: RandomAccessFile, key: Bytes, value: Bytes) = {
-    // val pos = appender.getFilePointer
-    // This change fixed a problem when the DB is re-opened, and the file pointer goes back the beginning of the DB file.
-    // The symptom of this issue was the data would corrupt eventually after the DB file was opened and closed a
-    // couple of times.
-		val pos = getFilePointer(appender)
+    val pos = getFilePointer(appender)
     val timestamp = (Utils.now / 1000).intValue()
     val keySize = key.size
     val valueSize = value.size
@@ -64,7 +62,7 @@ object IO extends Logging {
     appender.seek(appender.length())
     appender.getFilePointer
   }
-	
+
   def appendHintEntry(appender: RandomAccessFile, timestamp: Int, keySize: Int, valueSize: Int, pos: Int, key: Array[Byte]) {
     val buffer = ByteBuffer.allocate(4 + 2 + 4 + 4 + keySize)
     putInt32(buffer, timestamp, 0)
@@ -129,9 +127,9 @@ object IO extends Logging {
     DataEntry(pos.toInt, actualCrc, keySize, valueSize, timestamp, key, value)
   }
 
-   /*
- Iterative non-indexed hint entry read
-  */
+  /*
+Iterative non-indexed hint entry read
+ */
 
   def readHintEntry(reader: RandomAccessFile) = {
     val header = ByteBuffer.allocate(14)

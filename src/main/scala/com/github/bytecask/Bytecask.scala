@@ -88,7 +88,7 @@ class Bytecask(val dir: String, name: String = Utils.randomString(8), maxFileSiz
 
   def stats(): String = {
     "name: %s, dir: %s, uptime: %s, count: %s, splits: %s, merges: %s"
-      .format(name, dir, now - createdAt, count(), splits.get(), merger.merges)
+      .format(name, dir, now - createdAt, count(), splits.get(), merger.mergesCount)
   }
 
   def split() {
