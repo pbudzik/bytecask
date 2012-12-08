@@ -68,4 +68,18 @@ class CompressSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach
     db.get("foo") should be(None)
     db.destroy()
   }
+
+  test("basic ops initialized via trait") {
+    val db = new Bytecask(mkTempDir) with Compression
+    assert(db.processor.getClass == Compressor.getClass)
+    db.put("foo", "bar")
+    db.put("baz", "boo")
+    string(db.get("foo").get) should be("bar")
+    string(db.get("baz").get) should be("boo")
+    db.keys().map(string) should be(Set("foo", "baz"))
+    db.values().size should be(2)
+    db.delete("foo")
+    db.get("foo") should be(None)
+    db.destroy()
+  }
 }
