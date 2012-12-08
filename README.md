@@ -37,6 +37,14 @@ db.put("foo", "some value...")
 println(db.get("foo"))
 db.delete("foo")
 db.destroy()
+
+//other methods of initialization:
+
+val db = new Bytecask("/home/foo") with Compression
+val db = new Bytecask("/home/foo") with JmxSupport
+val db = new Bytecask("/home/foo", prefixedKeys=true) with Compression with JmxSupport
+...
+
 ```
 [See the tests](https://github.com/pbudzik/bytecask/blob/master/src/test/scala/bytecask/BasicSuite.scala)
 
