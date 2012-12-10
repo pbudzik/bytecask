@@ -22,9 +22,7 @@ package com.github.bytecask
 
 import org.xerial.snappy.Snappy
 import java.util.concurrent.atomic.AtomicLong
-import com.github.bytecask.Files.RichReader
 import java.io.{RandomAccessFile, IOException, File}
-import com.github.bytecask.Utils.RichIndexEntry
 
 object Utils {
 
@@ -151,6 +149,7 @@ object Utils {
   }
 
   implicit def indexEntryToRichEntry(entry: IndexEntry) = new RichIndexEntry(entry)
+
 }
 
 object Files {
@@ -166,5 +165,6 @@ object Files {
   }
 
   implicit def richReader(reader: Reader) = new RichReader(reader)
+
 }
 
