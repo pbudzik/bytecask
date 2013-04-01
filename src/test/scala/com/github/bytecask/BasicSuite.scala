@@ -36,6 +36,8 @@ class BasicSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
     string(db.get("foo").get) should be("bar")
     string(db.get("baz").get) should be("boo")
     db.keys().map(string) should be(Set("foo", "baz"))
+    assert (db.getMetadata("foo").get.timestamp > 0)
+    assert (db.getMetadata("baz").get.length > 0)
     db.values().size should be(2)
     db.delete("foo")
     db.get("foo") should be(None)

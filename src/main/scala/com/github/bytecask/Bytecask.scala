@@ -23,6 +23,7 @@ package com.github.bytecask
 import com.github.bytecask.Utils._
 import com.github.bytecask.Bytes._
 import java.util.concurrent.atomic.AtomicInteger
+import collection.mutable.ArrayBuffer
 
 class Bytecask(val dir: String, val name: String = Utils.randomString(8), maxFileSize: Long = IO.DEFAULT_MAX_FILE_SIZE,
                processor: ValueProcessor = PassThru, autoMerge: Boolean = false, maxConcurrentReaders: Int = 10,
@@ -34,6 +35,7 @@ class Bytecask(val dir: String, val name: String = Utils.randomString(8), maxFil
   val index = new Index(io, prefixedKeys)
   val splits = new AtomicInteger
   lazy val merger = new Merger(io, index)
+  val tasks = new ArrayBuffer[Map[String, Any] => Unit]
   val TOMBSTONE_VALUE = Bytes.EMPTY
   init()
 
@@ -61,6 +63,14 @@ class Bytecask(val dir: String, val name: String = Utils.randomString(8), maxFil
     }
   }
 
+  def getMetadata(key: Array[Byte]) = {
+    checkArgument(key.length > 0, "Key must not be empty")
+    index.get(key) match {
+      case Some(entry) => Some(EntryMetadata(entry.length, entry.timestamp))
+      case _ => None
+    }
+  }
+
   def delete(key: Array[Byte]) = {
     checkArgument(key.length > 0, "Key must not be empty")
     index.get(key) match {
@@ -72,6 +82,10 @@ class Bytecask(val dir: String, val name: String = Utils.randomString(8), maxFil
       }
       case _ => None
     }
+  }
+
+  def maintain(options: Map[String, Any] = Map()) {
+    for (task <- tasks) task(options)
   }
 
   def close() {
@@ -124,4 +138,9 @@ class Bytecask(val dir: String, val name: String = Utils.randomString(8), maxFil
     }
   }
 
+  def addTask(task: Map[String, Any] => Unit) {
+    tasks.append(task)
+  }
 }
+
+case class EntryMetadata(length: Int, timestamp: Long)

@@ -6,6 +6,7 @@
 * inspired by [Bitcask](https://github.com/basho/bitcask) (Erlang)
 * optional fast compression (backed by [snappy-java](http://code.google.com/p/snappy-java/))
 * optional Radix Tree support for keys
+* optional eviction and expiration
 * Apache 2.0 License
 
 ### Key properties: ###
@@ -43,10 +44,12 @@ db.destroy()
 val db = new Bytecask("/home/foo") with Compression
 val db = new Bytecask("/home/foo") with JmxSupport
 val db = new Bytecask("/home/foo", prefixedKeys=true) with Compression with JmxSupport
+val db = new Bytecask("/home/foo") with Eviction { val maxCount = 3 }
+val db = new Bytecask("/home/foo") with Expiration { val ttl = 15 }
 ...
 
 ```
-[See the tests](https://github.com/pbudzik/bytecask/blob/master/src/test/scala/bytecask/BasicSuite.scala)
+[See the tests](https://github.com/pbudzik/bytecask/blob/master/src/test/scala/com/github/bytecask/BasicSuite.scala)
 
 ### API ###
 ```scala

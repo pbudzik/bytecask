@@ -31,6 +31,8 @@ object Utils {
   @inline
   def now = System.currentTimeMillis()
 
+  def timestamp = (now / 1000).intValue()
+
   def mkTempDir = {
     val file = new File(System.getProperty("java.io.tmpdir") + File.separator + "_" + now + "_" + counter.incrementAndGet())
     file.mkdirs()

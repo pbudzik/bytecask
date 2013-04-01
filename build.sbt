@@ -26,6 +26,7 @@ scalacOptions ++= Seq(
   "-deprecation",
   "-Xmigration",
   "-Xcheckinit",
+  "-Yinline-warnings",
   "-optimise",
   "-encoding", "utf8"
 )

@@ -38,7 +38,7 @@ object IO extends Logging {
 
   def appendDataEntry(appender: RandomAccessFile, key: Bytes, value: Bytes) = {
     val pos = getFilePointer(appender)
-    val timestamp = (Utils.now / 1000).intValue()
+    val timestamp = Utils.timestamp
     val keySize = key.size
     val valueSize = value.size
     val length = IO.HEADER_SIZE + keySize + valueSize
