@@ -26,7 +26,11 @@ import java.io.{RandomAccessFile, IOException, File}
 
 object Utils {
 
+  lazy val prefix = randomString(2).toUpperCase
+
   val counter = new AtomicLong
+
+  def uniqueId = prefix + counter + randomString(2) + (System.currentTimeMillis().toString).takeRight(3)
 
   @inline
   def now = System.currentTimeMillis()

@@ -7,6 +7,7 @@
 * optional fast compression (backed by [snappy-java](http://code.google.com/p/snappy-java/))
 * optional Radix Tree support for keys
 * optional eviction and expiration
+* optimized for Java 1.7
 * Apache 2.0 License
 
 ### Key properties: ###
@@ -15,7 +16,6 @@
 * low latency write (appending)
 * low latency read (direct read)
 * automatic compaction/merging
-* optimized for Java 1.7
 
 ### Install ###
 

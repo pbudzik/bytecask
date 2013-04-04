@@ -22,21 +22,22 @@ package com.github.bytecask
 
 import com.github.bytecask.Utils._
 import com.github.bytecask.Bytes._
-import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger}
 import collection.mutable.ArrayBuffer
 
 class Bytecask(val dir: String, val name: String = Utils.randomString(8), maxFileSize: Long = IO.DEFAULT_MAX_FILE_SIZE,
                processor: ValueProcessor = PassThru, autoMerge: Boolean = false, maxConcurrentReaders: Int = 10,
-               prefixedKeys: Boolean = false) extends Logging {
-  lazy val bytecask = this
+               prefixedKeys: Boolean = false) extends Logging with StateAware {
+  val bytecask = this
   val createdAt = System.currentTimeMillis()
   mkDirIfNeeded(dir)
   val io = new IO(dir, maxConcurrentReaders)
   val index = new Index(io, prefixedKeys)
   val splits = new AtomicInteger
-  lazy val merger = new Merger(io, index)
+  val merger = new Merger(io, index)
   val tasks = new ArrayBuffer[Map[String, Any] => Unit]
   val TOMBSTONE_VALUE = Bytes.EMPTY
+  val id = Utils.uniqueId
   init()
 
   def init() {
@@ -52,6 +53,7 @@ class Bytecask(val dir: String, val name: String = Utils.randomString(8), maxFil
       if (entry.nonEmpty && entry.get.isInactive) merger.entryChanged(entry.get)
       index.update(key, pos, length, timestamp)
       if (io.pos > maxFileSize) split()
+      putDone()
     }
   }
 
@@ -78,12 +80,17 @@ class Bytecask(val dir: String, val name: String = Utils.randomString(8), maxFil
         io.appendDataEntry(key, TOMBSTONE_VALUE)
         index.delete(key)
         if (entry.isInactive) merger.entryChanged(entry)
+        deleteDone()
         entry
       }
       case _ => None
     }
   }
 
+  /**
+   * This triggers all tasks that manipulate entries like expiration, eviction etc.
+   *
+   */
   def maintain(options: Map[String, Any] = Map()) {
     for (task <- tasks) task(options)
   }
@@ -117,7 +124,7 @@ class Bytecask(val dir: String, val name: String = Utils.randomString(8), maxFil
 
   def count() = index.size
 
-  override def toString = "{name=%s, dir=%s}".format(name, dir)
+  override def toString = s"$name, $dir"
 
   def selfCheck() {
     notImplementedYet()
