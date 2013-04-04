@@ -31,19 +31,18 @@ trait Eviction {
   val maxCount: Int
 
   /*
-If there are items beyond the limit, find the oldest and remove
+    If there are items beyond the limit, find the oldest and remove
  */
 
-  bytecask.addTask {
-    options =>
-      if (maxCount > 0) {
-        val toEvict = bytecask.count() - maxCount
-        if (toEvict > 0) {
-          val items = bytecask.keys().map(key => (key, bytecask.getMetadata(key).get.timestamp)).toArray.sortBy(t => t._2)
-          for (item <- items.take(toEvict))
-            bytecask.delete(item._1)
-        }
+  def performEviction() {
+    if (maxCount > 0) {
+      val toEvict = bytecask.count() - maxCount
+      if (toEvict > 0) {
+        val items = bytecask.keys().map(key => (key, bytecask.getMetadata(key).get.timestamp)).toArray.sortBy(t => t._2)
+        for (item <- items.take(toEvict))
+          bytecask.delete(item._1)
       }
+    }
   }
 
 

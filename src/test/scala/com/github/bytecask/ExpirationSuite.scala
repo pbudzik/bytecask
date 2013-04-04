@@ -37,10 +37,10 @@ class ExpirationSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEa
     db.put("baz", "boo")
     db.put("baz1", "boo1")
     db.count() should be(3)
-    db.maintain()
+    db.performExpiration()
     db.count() should be(3)
     Thread.sleep(1001)
-    db.maintain()
+    db.performExpiration()
     db.count() should be(0)
     db.destroy()
   }

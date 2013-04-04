@@ -30,12 +30,11 @@ trait Expiration {
 
   val ttl: Int //Seconds !
 
-  bytecask.tasks.append {
-    options =>
-      for (key <- bytecask.keys())
-        for (meta <- bytecask.getMetadata(key))
-          if (Utils.timestamp - meta.timestamp >= ttl)
-            bytecask.delete(key)
+  def performExpiration() {
+    for (key <- bytecask.keys())
+      for (meta <- bytecask.getMetadata(key))
+        if (Utils.timestamp - meta.timestamp >= ttl)
+          bytecask.delete(key)
   }
 
 }

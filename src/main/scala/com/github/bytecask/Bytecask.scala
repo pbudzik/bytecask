@@ -35,7 +35,6 @@ class Bytecask(val dir: String, val name: String = Utils.randomString(8), maxFil
   val index = new Index(io, prefixedKeys)
   val splits = new AtomicInteger
   val merger = new Merger(io, index)
-  val tasks = new ArrayBuffer[Map[String, Any] => Unit]
   val TOMBSTONE_VALUE = Bytes.EMPTY
   val id = Utils.uniqueId
   init()
@@ -85,14 +84,6 @@ class Bytecask(val dir: String, val name: String = Utils.randomString(8), maxFil
       }
       case _ => None
     }
-  }
-
-  /**
-   * This triggers all tasks that manipulate entries like expiration, eviction etc.
-   *
-   */
-  def maintain(options: Map[String, Any] = Map()) {
-    for (task <- tasks) task(options)
   }
 
   def close() {
@@ -145,9 +136,6 @@ class Bytecask(val dir: String, val name: String = Utils.randomString(8), maxFil
     }
   }
 
-  def addTask(task: Map[String, Any] => Unit) {
-    tasks.append(task)
-  }
 }
 
 case class EntryMetadata(length: Int, timestamp: Long)
