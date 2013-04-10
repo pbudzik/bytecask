@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger}
 import collection.mutable.ArrayBuffer
 
 class Bytecask(val dir: String, val name: String = Utils.randomString(8), maxFileSize: Long = IO.DEFAULT_MAX_FILE_SIZE,
-               processor: ValueProcessor = PassThru, autoMerge: Boolean = false, maxConcurrentReaders: Int = 10,
+               processor: ValueProcessor = PassThru, maxConcurrentReaders: Int = 10,
                prefixedKeys: Boolean = false) extends Logging with StateAware {
   val bytecask = this
   val createdAt = System.currentTimeMillis()
@@ -100,7 +100,7 @@ class Bytecask(val dir: String, val name: String = Utils.randomString(8), maxFil
       .format(name, dir, now - createdAt, count(), splits.get(), merger.mergesCount)
   }
 
-  def split() {
+  protected def split() {
     synchronized {
       index.postSplit(io.split())
     }
@@ -116,10 +116,6 @@ class Bytecask(val dir: String, val name: String = Utils.randomString(8), maxFil
   def count() = index.size
 
   override def toString = s"$name, $dir"
-
-  def selfCheck() {
-    notImplementedYet()
-  }
 
   def keys() = index.keys
 
