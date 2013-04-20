@@ -35,6 +35,8 @@ final class Bytes(val bytes: Array[Byte]) {
 
   def size = bytes.size
 
+  def asString = new String(bytes)
+
   override def hashCode = Arrays.hashCode(bytes)
 }
 

@@ -37,11 +37,8 @@ class Bytecask(val dir: String, val name: String = Utils.randomString(8), maxFil
   val merger = new Merger(io, index)
   val TOMBSTONE_VALUE = Bytes.EMPTY
   val id = Utils.uniqueId
-  init()
 
-  def init() {
-    index.init()
-  }
+  index.init()
 
   def put(key: Array[Byte], value: Array[Byte]) {
     checkArgument(key.length > 0, "Key must not be empty")

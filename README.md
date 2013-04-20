@@ -7,7 +7,7 @@
 * optional fast compression (backed by [snappy-java](http://code.google.com/p/snappy-java/))
 * optional Radix Tree support for keys
 * optional eviction and expiration
-* optimized for Java 1.7
+* blob store/retrieve (i.e. for files)
 * Apache 2.0 License
 
 ### Key properties: ###
@@ -46,6 +46,7 @@ val db = new Bytecask("/home/foo") with JmxSupport
 val db = new Bytecask("/home/foo", prefixedKeys=true) with Compression with JmxSupport
 val db = new Bytecask("/home/foo") with Eviction { val maxCount = 3 }
 val db = new Bytecask("/home/foo") with Expiration { val ttl = 15 }
+val db = new Bytecask("/home/foo") with BlobStore { val blockSize = 1024 * 1024 }
 ...
 
 ```
