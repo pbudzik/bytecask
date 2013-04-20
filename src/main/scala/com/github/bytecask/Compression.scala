@@ -20,10 +20,10 @@
 
 package com.github.bytecask
 
-trait Compression {
+trait Compression extends Processors {
 
   val bytecask: Bytecask
 
-  val processor = Compressor
+  override val processor = Compressor
 
 }

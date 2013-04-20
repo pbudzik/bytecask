@@ -31,16 +31,16 @@ trait BlobStore {
 
   def storeBlob(name: String, is: InputStream) {
     val buffer = new Array[Byte](blockSize)
-    var i = 0
+    var blocks = 0
     var totalRead = 0L
     var read = is.read(buffer, 0, blockSize)
     while (read > 0) {
-      bytecask.put(key(name, i), buffer.slice(0, read))
-      i = i + 1
+      bytecask.put(key(name, blocks), buffer.slice(0, read))
+      blocks = blocks + 1
       totalRead = totalRead + read
       read = is.read(buffer, 0, blockSize)
     }
-    storeDescriptor(name, i, totalRead)
+    storeDescriptor(name, blocks, totalRead)
   }
 
   def retrieveBlob(name: String, os: OutputStream) {

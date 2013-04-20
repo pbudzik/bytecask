@@ -18,7 +18,7 @@ resolvers ++= Seq(
 
 libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % "0.9.30" % "compile",
-  "org.xerial.snappy" % "snappy-java" % "1.0.5-M3",
+  "org.xerial.snappy" % "snappy-java" % "1.1.0-M3",
   "org.scalatest" % "scalatest_2.10.0-RC3"  % "1.8-B1"  % "test"
 )
 

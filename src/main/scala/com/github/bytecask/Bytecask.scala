@@ -22,12 +22,11 @@ package com.github.bytecask
 
 import com.github.bytecask.Utils._
 import com.github.bytecask.Bytes._
-import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger}
-import collection.mutable.ArrayBuffer
+import java.util.concurrent.atomic.AtomicInteger
 
 class Bytecask(val dir: String, val name: String = Utils.randomString(8), maxFileSize: Long = IO.DEFAULT_MAX_FILE_SIZE,
-               processor: ValueProcessor = PassThru, maxConcurrentReaders: Int = 10,
-               prefixedKeys: Boolean = false) extends Logging with StateAware {
+               maxConcurrentReaders: Int = 10, prefixedKeys: Boolean = false)
+  extends Logging with StateAware with Processors{
   val bytecask = this
   val createdAt = System.currentTimeMillis()
   mkDirIfNeeded(dir)
@@ -132,3 +131,7 @@ class Bytecask(val dir: String, val name: String = Utils.randomString(8), maxFil
 }
 
 case class EntryMetadata(length: Int, timestamp: Long)
+
+trait Processors {
+  val processor: ValueProcessor = PassThru
+}
