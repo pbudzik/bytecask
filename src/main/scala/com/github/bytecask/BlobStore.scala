@@ -54,9 +54,9 @@ trait BlobStore {
     }
   }
 
-  private def key(name: String, i: Int) = "file://" + name + "_" + i
-
   private def key(name: String) = "file://" + name
+
+  private def key(name: String, i: Int): String = key(name) + "_" + i
 
   private def storeDescriptor(name: String, blocks: Int, length: Long) {
     val value = ByteBuffer.allocate(12).putInt(blocks).putLong(length).array()
