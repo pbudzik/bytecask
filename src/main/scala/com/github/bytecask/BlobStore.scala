@@ -44,14 +44,26 @@ trait BlobStore {
   }
 
   def retrieveBlob(name: String, os: OutputStream) {
-    val descriptor = bytecask.get(key(name)).get
-    val buffer = ByteBuffer.wrap(descriptor)
-    val blocks = buffer.getInt
-    val length = buffer.getLong
-    for (i <- 0 to blocks - 1) {
-      val buf = bytecask.get(key(name, i)).get
-      os.write(buf)
+    bytecask.get(key(name)) match {
+      case Some(descriptor) =>
+        val buffer = ByteBuffer.wrap(descriptor)
+        val blocks = buffer.getInt
+        val length = buffer.getLong
+        for (i <- 0 to blocks - 1) {
+          val buf = bytecask.get(key(name, i)).get
+          os.write(buf)
+        }
+      case _ => throw new IllegalArgumentException("Blob not found: " + name)
     }
+  }
+
+  def getBlobMetadata(name: String) = bytecask.get(key(name)) match {
+    case Some(descriptor) =>
+      val buffer = ByteBuffer.wrap(descriptor)
+      val blocks = buffer.getInt
+      val length = buffer.getLong
+      BlobMeta(name, length, blocks)
+    case _ => throw new IllegalArgumentException("Blob not found: " + name)
   }
 
   private def key(name: String) = "file://" + name
@@ -63,3 +75,5 @@ trait BlobStore {
     bytecask.put(key(name), value)
   }
 }
+
+case class BlobMeta(name: String, length: Long, blocks: Int)

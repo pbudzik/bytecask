@@ -44,13 +44,19 @@ class BlobStoreSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEac
         }
     }
 
-    db.storeBlob("blobby", new FileInputStream(file))
+    val name = "blobby"
+    db.storeBlob(name, new FileInputStream(file))
 
     db.count() should be(12) //11 chunks + 1 descriptor
 
+    val meta = db.getBlobMetadata(name)
+    meta.name should be(name)
+    meta.length should be(11001 * 1024)
+    meta.blocks should be(11)
+
     val file2 = "/tmp/blob2"
     withResource(new FileOutputStream(file2)) {
-      os => db.retrieveBlob("blobby", os)
+      os => db.retrieveBlob(name, os)
     }
 
     file.mkFile.length() should be(file2.mkFile.length())
