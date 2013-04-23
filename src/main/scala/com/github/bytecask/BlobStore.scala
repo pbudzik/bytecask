@@ -29,7 +29,7 @@ trait BlobStore {
 
   val blockSize: Int
 
-  def storeBlob(name: String, is: InputStream) {
+  def storeBlob(name: String, is: InputStream) = {
     val buffer = new Array[Byte](blockSize)
     var blocks = 0
     var totalRead = 0L
@@ -41,6 +41,7 @@ trait BlobStore {
       read = is.read(buffer, 0, blockSize)
     }
     storeDescriptor(name, blocks, totalRead)
+    totalRead
   }
 
   def retrieveBlob(name: String, os: OutputStream) {
@@ -50,10 +51,12 @@ trait BlobStore {
         val blocks = buffer.getInt
         val length = buffer.getLong
         for (i <- 0 to blocks - 1) {
-          val buf = bytecask.get(key(name, i)).get
-          os.write(buf)
+          bytecask.get(key(name, i)) match {
+            case Some(buf) => os.write(buf)
+            case _ => throw new IllegalStateException(s"Couldn't retrieve blob's block #$i")
+          }
         }
-      case _ => throw new IllegalArgumentException("Blob not found: " + name)
+      case _ => throw new IllegalArgumentException(s"Blob not found: $name")
     }
   }
 
@@ -63,7 +66,7 @@ trait BlobStore {
       val blocks = buffer.getInt
       val length = buffer.getLong
       BlobMeta(name, length, blocks)
-    case _ => throw new IllegalArgumentException("Blob not found: " + name)
+    case _ => throw new IllegalArgumentException(s"Blob not found: $name")
   }
 
   private def key(name: String) = "file://" + name

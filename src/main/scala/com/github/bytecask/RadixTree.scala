@@ -54,16 +54,14 @@ class RadixTree[T] {
     val visitor = new Visitor[T, Boolean](Some(false)) {
       def accept(key: String, parent: RadixTreeNode[T], node: RadixTreeNode[T]) {
         result = Some(!node.isVirtual)
-        if (result.get) {
-          if (node.children.size == 0) {
-            val survivors = parent.children.filter(_.key != node.key)
-            parent.children = survivors
-            if (parent.children.size == 1 && parent.isVirtual)
-              mergeNodes(parent, parent.children(0))
-          } else if (node.children.size == 1) {
-            mergeNodes(node, node.children(0))
-          } else node.setVirtual()
-        }
+        if (result.get && node.children.size == 0) {
+          val survivors = parent.children.filter(_.key != node.key)
+          parent.children = survivors
+          if (parent.children.size == 1 && parent.isVirtual)
+            mergeNodes(parent, parent.children(0))
+        } else if (node.children.size == 1) {
+          mergeNodes(node, node.children(0))
+        } else node.setVirtual()
         @inline
         def mergeNodes(parent: RadixTreeNode[T], child: RadixTreeNode[T]) {
           parent.key = parent.key + child.key
