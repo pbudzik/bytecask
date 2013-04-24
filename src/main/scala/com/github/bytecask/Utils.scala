@@ -23,6 +23,8 @@ package com.github.bytecask
 import org.xerial.snappy.Snappy
 import java.util.concurrent.atomic.AtomicLong
 import java.io.{RandomAccessFile, IOException, File}
+import java.nio.file.{FileVisitResult, Path, SimpleFileVisitor}
+import java.nio.file.attribute.BasicFileAttributes
 
 object Utils {
 
@@ -69,7 +71,18 @@ object Utils {
 
   def ls(dir: String) = dir.mkFile.listFiles()
 
-  def dirSize(dir: String) = ls(dir).map(_.length()).sum
+  def dirSize(dir: String): Long = dirSize(dir.mkFile)
+
+  def dirSize(file: File) = {
+    var size = 0L
+    java.nio.file.Files.walkFileTree(file.toPath, new SimpleFileVisitor[Path] {
+      override def visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult = {
+        size += attrs.size
+        super.visitFile(file, attrs)
+      }
+    })
+    size
+  }
 
   def mkDirIfNeeded(dir: String) {
     if (!dir.mkFile.exists()) dir.mkFile.mkdirs()

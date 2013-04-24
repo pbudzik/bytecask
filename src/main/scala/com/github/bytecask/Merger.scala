@@ -31,21 +31,21 @@ Merges inactive files to save space.
 final class Merger(io: IO, index: Index) extends Logging {
   val mergesCount = new AtomicInteger
   val lastMerged = new AtomicLong
-  val changes = Map[String, Delta]()
+  val reclaims = Map[String, Delta]()
 
   import com.github.bytecask.Utils._
 
-  def entryChanged(entry: IndexEntry) {
-    changes.synchronized {
-      val delta = changes.getOrElseUpdate(entry.file, Delta(0, entry.length))
-      changes.put(entry.file, Delta(delta.entries + 1, delta.length + entry.length))
+  def addReclaim(entry: IndexEntry) {
+    reclaims.synchronized {
+      val delta = reclaims.getOrElseUpdate(entry.file, Delta(0, entry.length))
+      reclaims.put(entry.file, Delta(delta.entries + 1, delta.length + entry.length))
     }
   }
 
   def mergeIfNeeded(dataThreshold: Int) {
-    debug("Checking changes: " + changes)
+    debug("Checking reclaims: " + reclaims)
     val files = for (
-      (file, delta) <- changes
+      (file, delta) <- reclaims
       if (delta.length > dataThreshold) //might test number of entries altered
     ) yield file
     debug("Files to be merged: " + collToString(files))
@@ -82,7 +82,7 @@ final class Merger(io: IO, index: Index) extends Logging {
                 index.getMap.put(key, indexEntry)
                 IO.appendHintEntry(appender, indexEntry.timestamp, key.length, indexEntry.length - 15, indexEntry.pos, key)
               }
-              files.foreach(changes.remove)
+              files.foreach(reclaims.remove)
               files.foreach(file => io.delete(dbFile(file)))
               index.synchronized(files.foreach(file => replaceFile(file, target)))
               tmp.renameTo(dbFile(target))

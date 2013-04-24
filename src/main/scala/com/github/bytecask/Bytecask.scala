@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class Bytecask(val dir: String, val name: String = Utils.randomString(8), maxFileSize: Long = IO.DEFAULT_MAX_FILE_SIZE,
                maxConcurrentReaders: Int = 10, prefixedKeys: Boolean = false)
-  extends Logging with StateAware with Processors{
+  extends Logging with StateAware with Processors {
   val bytecask = this
   val createdAt = System.currentTimeMillis()
   mkDirIfNeeded(dir)
@@ -45,7 +45,7 @@ class Bytecask(val dir: String, val name: String = Utils.randomString(8), maxFil
     val entry = index.get(key)
     io.synchronized {
       val (pos, length, timestamp) = io.appendDataEntry(key, processor.before(value))
-      if (entry.nonEmpty && entry.get.isInactive) merger.entryChanged(entry.get)
+      if (entry.nonEmpty && entry.get.isInactive) merger.addReclaim(entry.get)
       index.update(key, pos, length, timestamp)
       if (io.pos > maxFileSize) split()
       putDone()
@@ -74,7 +74,7 @@ class Bytecask(val dir: String, val name: String = Utils.randomString(8), maxFil
       case Some(entry) => {
         io.appendDataEntry(key, TOMBSTONE_VALUE)
         index.delete(key)
-        if (entry.isInactive) merger.entryChanged(entry)
+        if (entry.isInactive) merger.addReclaim(entry)
         deleteDone()
         entry
       }
@@ -90,6 +90,8 @@ class Bytecask(val dir: String, val name: String = Utils.randomString(8), maxFil
     close()
     rmdir(dir)
   }
+
+  def filesCount = ls(dir).size
 
   def stats(): String = {
     "name: %s, dir: %s, uptime: %s, count: %s, splits: %s, merges: %s"
@@ -108,6 +110,14 @@ class Bytecask(val dir: String, val name: String = Utils.randomString(8), maxFil
       merger.forceMerge()
     }
   }
+
+  /**
+   * How much data out-of-date data might be reclaimed if merge triggered
+   */
+
+  def reclaimSize() = merger.reclaims.values.map(_.length).sum
+
+  def reclaimPercentage() = (reclaimSize() / dirSize(dir)) * 100
 
   def count() = index.size
 
