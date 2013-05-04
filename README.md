@@ -47,6 +47,10 @@ val db = new Bytecask("/home/foo", prefixedKeys=true) with Compression with JmxS
 val db = new Bytecask("/home/foo") with Eviction { val maxCount = 3 }
 val db = new Bytecask("/home/foo") with Expiration { val ttl = 15 }
 val db = new Bytecask("/home/foo") with BlobStore { val blockSize = 1024 * 1024 }
+val db = new Bytecask("/home/foo") with Compression with Expiration with BlobStore {
+    val ttl = 15
+    val blockSize = 1024 * 1024
+}
 ...
 
 ```
