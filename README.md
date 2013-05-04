@@ -57,9 +57,22 @@ val db = new Bytecask("/home/foo") with JmxSupport
 
 Blob store example
 
-[gist]https://gist.github.com/pbudzik/5517587.js[/gist]
+```scala
 
-[See the tests](https://github.com/pbudzik/bytecask/blob/master/src/test/scala/com/github/bytecask/BasicSuite.scala)
+val db = new Bytecask(mkTempDir) with BlobStore {
+      val blockSize = 1024 * 1024
+}
+
+db.storeBlob(name, new FileInputStream(...))
+
+...
+
+withResource(new FileOutputStream(...)) {
+      os => db.retrieveBlob(name, os)
+}
+```
+
+More -> [See the tests](https://github.com/pbudzik/bytecask/blob/master/src/test/scala/com/github/bytecask/BasicSuite.scala)
 
 ### API ###
 ```scala
