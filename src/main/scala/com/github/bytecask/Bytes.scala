@@ -37,6 +37,8 @@ final class Bytes(val bytes: Array[Byte]) {
 
   def asString = new String(bytes)
 
+  def isEmpty = bytes.isEmpty
+
   override def hashCode = Arrays.hashCode(bytes)
 }
 
@@ -59,6 +61,7 @@ object Bytes {
 
   implicit def strToArray(s: String) = s.getBytes
 
+  implicit def bytesToString(b: Array[Byte]) = b.asString
 }
 
 

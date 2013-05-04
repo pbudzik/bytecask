@@ -24,6 +24,8 @@ import collection.mutable.Map
 import java.io.File
 
 import com.github.bytecask.Utils._
+import com.github.bytecask.Bytes._
+
 
 /*
 Index (aka Keydir)- keeps position and length of entry in a file
@@ -31,7 +33,7 @@ Index (aka Keydir)- keeps position and length of entry in a file
 
 final class Index(io: IO, prefixedKeys: Boolean = false) extends Logging with Locking with Tracking {
 
-  val indexMap = if (prefixedKeys) new RadixTreeIndexMap() else Map[Bytes, IndexEntry]()
+  val indexMap = if (prefixedKeys) new PrefixIndexMap else Map[Bytes, IndexEntry]()
 
   def init() {
     debug("Initializing index...")
@@ -97,3 +99,5 @@ final class Index(io: IO, prefixedKeys: Boolean = false) extends Logging with Lo
 }
 
 final case class IndexEntry(file: String, pos: Int, length: Int, timestamp: Int)
+
+
