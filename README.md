@@ -57,7 +57,7 @@ val db = new Bytecask("/home/foo") with JmxSupport
 
 Blob store example
 
-[View gist]("https://gist.github.com/pbudzik/5517587.js)
+[gist]https://gist.github.com/pbudzik/5517587.js[/gist]
 
 [See the tests](https://github.com/pbudzik/bytecask/blob/master/src/test/scala/com/github/bytecask/BasicSuite.scala)
 
