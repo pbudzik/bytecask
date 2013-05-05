@@ -64,7 +64,7 @@ val db = new Bytecask(mkTempDir) with BlobStore {
 
 db.storeBlob(name, new FileInputStream(...))
 
-// read the blob passing an output stream to write blob to
+// read the blob passing an output stream to write the blob to
 
 withResource(new FileOutputStream(...)) {
       os => db.retrieveBlob(name, os)
@@ -74,12 +74,11 @@ withResource(new FileOutputStream(...)) {
 
 // passivation/activation example
 
-
 if (db.idleTime > 15*60*1000)
     db.passivate()
 
 // passivation releases memory occupied by the index (data is not gone though)
-// now all access methods throw exception as the db is inactive (keeps no references)
+// now all access methods throw exception as the db is inactive (no references are kept)
 
 if (!db.isActive)
     db.activate()
@@ -108,6 +107,17 @@ More -> [See the tests](https://github.com/pbudzik/bytecask/blob/master/src/test
   def close(): Unit
 
   def destroy(): Unit
+
+  def passivate(): Unit
+
+  def activate(): Unit
+
+  def idleTime: Long
+
+  def isActive: Boolean
+
+  def isDirty: Boolean
+
 ```
 ### Glossary ###
 
