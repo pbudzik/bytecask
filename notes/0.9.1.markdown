@@ -1,0 +1,65 @@
+There is finally a new milestone coming out!
+
+### Changes since 0.1.1:
+
+* blob store/retrieve (i.e.for files)
+* support for keys with common prefixes (i.e. urls, files etc)
+* support for entries expiration and eviction
+* passivation/activation
+* lots of major refactorings and bugfixes
+* built with Scala 2.10.1 and SBT 0.12.3
+
+### Examples ###
+
+    val db = new Bytecask("/home/foo")
+    db.put("foo", "some value...")
+    println(db.get("foo"))
+    db.delete("foo")
+    db.destroy()
+
+    //other methods of initialization:
+
+    val db = new Bytecask("/home/foo") with Compression
+    val db = new Bytecask("/home/foo", prefixedKeys=true) with Compression
+    val db = new Bytecask("/home/foo") with Eviction { val maxCount = 3 }
+    val db = new Bytecask("/home/foo") with Expiration { val ttl = 180 }
+    val db = new Bytecask("/home/foo") with BlobStore { val blockSize = 1024 * 1024 }
+    val db = new Bytecask("/home/foo") with Compression with Expiration with BlobStore {
+        val ttl = 180
+        val blockSize = 1024 * 1024
+    }
+    val db = new Bytecask("/home/foo") with JmxSupport
+
+    ...
+
+    //blob store example
+
+    val db = new Bytecask(mkTempDir) with BlobStore {
+          val blockSize = 1024 * 1024
+    }
+
+    // store a blob (i.e. file) passing an input stream to read data from
+
+    db.storeBlob(name, new FileInputStream(...))
+
+    // retrieve the blob passing an output stream to write the blob to
+
+    withResource(new FileOutputStream(...)) {
+          os => db.retrieveBlob(name, os)
+    }
+
+    ...
+
+    // passivation/activation example
+
+    if (db.idleTime > 15*60*1000)
+        db.passivate()
+
+    // passivation releases memory occupied by the index (data is not gone though)
+    // now all access methods throw exception as the db is inactive (no references are kept)
+
+    if (!db.isActive)
+        db.activate()
+
+    // activation restores index from files and sets 'active' state
+

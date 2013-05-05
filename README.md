@@ -1,11 +1,11 @@
-#### Bytecask - low latency k/v file database ####
+#### Bytecask - low latency k/v file storage component ####
 
 * lightweight - no dependencies, no underlying storages
 * embeddable building block, no daemons, no external scripts needed
 * storage component for distributed NoSQL databases
 * inspired by [Bitcask](https://github.com/basho/bitcask) (Erlang)
 * optional fast compression (backed by [snappy-java](http://code.google.com/p/snappy-java/))
-* support for eviction and expiration
+* support for expiration and eviction
 * support for keys with common prefixes (i.e. urls, files etc)
 * blob store/retrieve (i.e. for files)
 * passivation/activation (if db is idle we may release resources and restore it when necessary)
@@ -46,10 +46,10 @@ db.destroy()
 val db = new Bytecask("/home/foo") with Compression
 val db = new Bytecask("/home/foo", prefixedKeys=true) with Compression
 val db = new Bytecask("/home/foo") with Eviction { val maxCount = 3 }
-val db = new Bytecask("/home/foo") with Expiration { val ttl = 15 }
+val db = new Bytecask("/home/foo") with Expiration { val ttl = 180 }
 val db = new Bytecask("/home/foo") with BlobStore { val blockSize = 1024 * 1024 }
 val db = new Bytecask("/home/foo") with Compression with Expiration with BlobStore {
-    val ttl = 15
+    val ttl = 180
     val blockSize = 1024 * 1024
 }
 val db = new Bytecask("/home/foo") with JmxSupport
