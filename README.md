@@ -130,8 +130,8 @@ merge operation compacts data as well as merges files into one
 a persisted index, so later the index can be rebuilt w/o processing the data file (however anyway
 can be built)
 * Prefixed keys - keys that contain common prefixes like file paths, URLs etc. In this case it is not efficient
-to allocate memory for all those repetitive byte sequences. It is advisable to turn prefixed keys mode in order
-to have a dedicated map implementation used (based on [Patricia Trie](http://en.wikipedia.org/wiki/Radix_tree))
+to allocate memory for all those repetitive byte sequences. It is advisable to turn prefixed keys mode on, in order
+to have a dedicated map implementation being used (based on [Patricia Trie](http://en.wikipedia.org/wiki/Radix_tree))
 * Passivation - if we maintain multiple Bytecask instances (say per user) and some of them are not being used it may
 not be critical to keep all indexes in memory. Passivation puts an instance "on hold", to be activated later, what means
 index will have to be reread to memory. This may improve overall resources management/scalabilty at the price of
@@ -139,9 +139,10 @@ occasional activation time.
 * Blob store - internal architecture has inherent limitation as to the value size as it is internally represented as
 an array of bytes. It means that blobs (files included) cannot be easily stored. The blob store function of the API
 breaks blob's value down to segments so that multiple segments (plus a descriptor entry) altogether hold the value.
-Storing and retrieving relys on streams rather than on values as the value by definition is large.
+Storing and retrieving relies on streams rather than on values as the value by definition is large.
 * Eviction/Expiration - eviction is a mechanism to manage which entries should be removed (at the moment based on max items),
 expiration is removal based on time (TTL).
+
 ### Benchmark ####
 
 ```
