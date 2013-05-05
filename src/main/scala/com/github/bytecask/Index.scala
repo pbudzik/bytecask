@@ -36,16 +36,26 @@ final class Index(io: IO, prefixedKeys: Boolean = false) extends Logging with Lo
   val indexMap = if (prefixedKeys) new PrefixIndexMap else Map[Bytes, IndexEntry]()
 
   def init() {
-    debug("Initializing index...")
-    if (ls(io.dir).toList.filter(_.length() > 0).map(indexFile).filter(!_).size > 0) incErrors
+    synchronized {
+      debug("Initializing index...")
+      if (ls(io.dir).toList.filter(_.length() > 0).map(readData).filter(!_).size > 0) incErrors
+    }
+  }
+
+  def close() {
+    synchronized {
+      indexMap.clear()
+    }
+    System.gc()
   }
 
   private def hintFile(file: File) = (file.getAbsolutePath + "h").mkFile
 
-  private def indexFile(file: File) = {
-    if (hintFile(file).exists()) {
+  private def readData(file: File) = {
+    val hf = hintFile(file)
+    if (hf.exists()) {
       debug("hint file exists for " + file)
-      IO.readHintEntries(hintFile(file), processHintEntry)
+      IO.readHintEntries(hf, processHintEntry)
     } else IO.readDataEntries(file, processDataEntry)
   }
 

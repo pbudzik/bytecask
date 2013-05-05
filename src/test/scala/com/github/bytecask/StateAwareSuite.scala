@@ -22,6 +22,7 @@ package com.github.bytecask
 
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.{BeforeAndAfterEach, FunSuite}
+import org.scalatest.matchers.ShouldMatchers._
 
 import com.github.bytecask.Utils._
 import com.github.bytecask.Files._
@@ -31,7 +32,7 @@ import com.github.bytecask.State._
 class StateAwareSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
 
   test("testing state after put and delete") {
-    val db = new Bytecask(mkTempDir) with StateAware
+    val db = new Bytecask(mkTempDir)
     db.getState should be(Unmodified)
     db.put("foo", "bar")
     db.getState should be(AfterPut)
@@ -47,6 +48,24 @@ class StateAwareSuite extends FunSuite with ShouldMatchers with BeforeAndAfterEa
     db.getState should be(AfterDelete)
     db.resetState()
     db.getState should be(Unmodified)
+    db.destroy()
+  }
+
+  test("activattion and passivation") {
+    val db = new Bytecask(mkTempDir)
+    Thread.sleep(300)
+    db.idleTime should be >= (300L)
+    db.count()
+    db.idleTime should be < (300L)
+    db.put("1", "foo")
+    db.put("2", "bar")
+    db.passivate()
+    evaluating {
+      db.count()
+    } should produce[IllegalAccessException]
+    db.activate()
+    db.get("1").get.asString should be ("foo")
+    db.get("2").get.asString should be ("bar")
     db.destroy()
   }
 

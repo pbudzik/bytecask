@@ -28,7 +28,6 @@ class Bytecask(val dir: String, val name: String = Utils.randomString(8), maxFil
                maxConcurrentReaders: Int = 10, prefixedKeys: Boolean = false)
   extends Logging with StateAware with Processors {
   val bytecask = this
-  val createdAt = System.currentTimeMillis()
   mkDirIfNeeded(dir)
   val io = new IO(dir, maxConcurrentReaders)
   val index = new Index(io, prefixedKeys)
@@ -40,19 +39,21 @@ class Bytecask(val dir: String, val name: String = Utils.randomString(8), maxFil
   index.init()
 
   def put(key: Array[Byte], value: Array[Byte]) {
-    checkArgument(key.length > 0, "Key must not be empty")
-    checkArgument(value.length > 0, "Value must not be empty")
-    val entry = index.get(key)
-    io.synchronized {
-      val (pos, length, timestamp) = io.appendDataEntry(key, processor.before(value))
-      if (entry.nonEmpty && entry.get.isInactive) merger.addReclaim(entry.get)
-      index.update(key, pos, length, timestamp)
-      if (io.pos > maxFileSize) split()
-      putDone()
+    access {
+      checkArgument(key.length > 0, "Key must not be empty")
+      checkArgument(value.length > 0, "Value must not be empty")
+      val entry = index.get(key)
+      io.synchronized {
+        val (pos, length, timestamp) = io.appendDataEntry(key, processor.before(value))
+        if (entry.nonEmpty && entry.get.isInactive) merger.addReclaim(entry.get)
+        index.update(key, pos, length, timestamp)
+        if (io.pos > maxFileSize) split()
+        putDone()
+      }
     }
   }
 
-  def get(key: Array[Byte]) = {
+  def get(key: Array[Byte]) = access {
     checkArgument(key.length > 0, "Key must not be empty")
     index.get(key) match {
       case Some(entry) => processor.after(Some(io.readValue(entry)))
@@ -60,7 +61,7 @@ class Bytecask(val dir: String, val name: String = Utils.randomString(8), maxFil
     }
   }
 
-  def getMetadata(key: Array[Byte]) = {
+  def getMetadata(key: Array[Byte]) = access {
     checkArgument(key.length > 0, "Key must not be empty")
     index.get(key) match {
       case Some(entry) => Some(EntryMetadata(entry.length, entry.timestamp))
@@ -68,7 +69,7 @@ class Bytecask(val dir: String, val name: String = Utils.randomString(8), maxFil
     }
   }
 
-  def delete(key: Array[Byte]) = {
+  def delete(key: Array[Byte]) = access {
     checkArgument(key.length > 0, "Key must not be empty")
     index.get(key) match {
       case Some(entry) => {
@@ -93,7 +94,7 @@ class Bytecask(val dir: String, val name: String = Utils.randomString(8), maxFil
 
   def filesCount = ls(dir).size
 
-  def stats(): String = {
+  def stats(): String = access {
     "name: %s, dir: %s, uptime: %s, count: %s, splits: %s, merges: %s"
       .format(name, dir, now - createdAt, count(), splits.get(), merger.mergesCount)
   }
@@ -119,13 +120,17 @@ class Bytecask(val dir: String, val name: String = Utils.randomString(8), maxFil
 
   def reclaimPercentage() = (reclaimSize() / dirSize(dir)) * 100
 
-  def count() = index.size
+  def count() = access {
+    index.size
+  }
 
   override def toString = s"$name, $dir"
 
-  def keys() = index.keys
+  def keys() = access {
+    index.keys
+  }
 
-  def values() = {
+  def values() = access {
     val iterator = index.keys.iterator
     new Iterator[Option[Bytes]]() {
 
@@ -137,6 +142,18 @@ class Bytecask(val dir: String, val name: String = Utils.randomString(8), maxFil
       }
     }
   }
+
+  def passivate() {
+    index.close()
+    active.set(false)
+  }
+
+  def activate() {
+    index.init()
+    active.set(true)
+  }
+
+  def idleTime = Utils.now - lastAccessed.get()
 
 }
 

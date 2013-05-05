@@ -21,6 +21,8 @@
 package com.github.bytecask
 
 import collection._
+import scala.collection.mutable.{Builder, MapBuilder}
+import scala.collection.generic.CanBuildFrom
 
 class PrefixIndexMap extends mutable.Map[Bytes, IndexEntry] {
   val prefMap = new PrefixMap[IndexEntry]
@@ -97,9 +99,6 @@ class PrefixMap[T] extends mutable.Map[String, T] with mutable.MapLike[String, T
 
   override def empty = new PrefixMap[T]
 }
-
-import scala.collection.mutable.{Builder, MapBuilder}
-import scala.collection.generic.CanBuildFrom
 
 object PrefixMap extends {
   def empty[T] = new PrefixMap[T]

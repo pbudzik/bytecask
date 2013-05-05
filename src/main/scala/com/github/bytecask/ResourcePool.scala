@@ -28,7 +28,7 @@ import collection.JavaConversions._
 /**
  * Instead of creating a RandomAccessFile per each reading thread the idea
  * is to keep a pool of readers per each file and reuse it keeping it open.
- * This avoids costly file handlers creation to the same files.
+ * This avoids costly file handlers creation for the same files.
  */
 
 abstract class ResourcePool[T <: {def close()}](maxResources: Int) {
@@ -103,20 +103,17 @@ abstract class FileReadersPool[T <: {def close()}](maxReaders: Int) {
 }
 
 /**
- * TODO: if there happens to be many files the file OS limit may be exceeded
+ * TODO: if there happens to be many files open, the file OS limit may be exceeded
  * Might be a LRU cache w/ open files closure
  */
 
 class RandomAccessFilePool(maxFiles: Int) extends FileReadersPool[RandomAccessFile](maxFiles) {
   def createReader(file: String) = new RandomAccessFile(file, "r")
 
-  override def get(file: String) = {
-    super.get(file) match {
-      case reader if !reader.getChannel.isOpen => {
-        invalidate(file)
-        get(file)
-      }
-      case reader => reader
-    }
+  override def get(file: String) = super.get(file) match {
+    case reader if !reader.getChannel.isOpen =>
+      invalidate(file)
+      get(file)
+    case reader => reader
   }
 }

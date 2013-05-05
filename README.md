@@ -8,6 +8,7 @@
 * optional eviction and expiration
 * optional support for keys with common prefixes (i.e. urls, files etc)
 * blob store/retrieve (i.e. for files)
+* passivation/activation (if db is idle we may release resources and restore it when necessary)
 * Apache 2.0 License
 
 ### Key properties: ###
@@ -34,7 +35,7 @@ Repos:
 ```scala
 
 val db = new Bytecask("/home/foo")
-db.put("foo", "some value...")
+db.put("foo", "blob store example addedsome value...")
 println(db.get("foo"))
 db.delete("foo")
 db.destroy()
@@ -53,23 +54,38 @@ val db = new Bytecask("/home/foo") with Compression with Expiration with BlobSto
 val db = new Bytecask("/home/foo") with JmxSupport
 ...
 
-```
-
-Blob store example
-
-```scala
+//blob store example
 
 val db = new Bytecask(mkTempDir) with BlobStore {
       val blockSize = 1024 * 1024
 }
 
+// store a blob (i.e. file) passing an input stream to read data from
+
 db.storeBlob(name, new FileInputStream(...))
 
-...
+// read the blob passing an output stream to write blob to
 
 withResource(new FileOutputStream(...)) {
       os => db.retrieveBlob(name, os)
 }
+
+...
+
+// passivation/activation example
+
+
+if (db.idleTime > 15*60*1000)
+    db.passivate()
+
+// passivation releases memory occupied by the index (data is not gone though)
+// now all access methods throw exception as the db is inactive (keeps no references)
+
+if (!db.isActive)
+    db.activate()
+
+// activation restores index from files and sets 'active' state
+
 ```
 
 More -> [See the tests](https://github.com/pbudzik/bytecask/blob/master/src/test/scala/com/github/bytecask/BasicSuite.scala)

@@ -23,9 +23,9 @@ package com.github.bytecask
 import java.util.concurrent.locks.ReentrantReadWriteLock
 
 trait Locking {
-  val lock = new ReentrantReadWriteLock()
-  val read = lock.readLock()
-  val write = lock.writeLock()
+  val lock = new ReentrantReadWriteLock
+  val read = lock.readLock
+  val write = lock.writeLock
 
   def readLock[T](f: => T): T = {
     read.lock()
