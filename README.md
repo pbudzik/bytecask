@@ -112,7 +112,7 @@ More -> [See the tests](https://github.com/pbudzik/bytecask/blob/master/src/test
   def passivate(): Unit
 
   def activate(): Unit
-                                minor update of verbiage
+
   def idleTime: Long
 
   def isActive: Boolean
