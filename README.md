@@ -1,4 +1,4 @@
-#### Bytecask - low latency k/v file storage component ####
+#### Bytecask - low latency k/v storage component ####
 
 * lightweight - no dependencies, no underlying storages
 * embeddable building block, no daemons, no external scripts needed
@@ -203,3 +203,5 @@ Patches are gladly welcome from their original author. Along with any patches, p
 and that you license the work to the Bytecask project under the Apache 2.0 or a compatible license.
 
 To propose a patch, fork the project and send a pull request via github.
+
+** Any feedback, ideas, suggestions, success stories etc are more than welcome! **
