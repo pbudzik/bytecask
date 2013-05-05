@@ -132,6 +132,7 @@ can be built)
 * Prefixed keys - keys that contain common prefixes like file paths, URLs etc. In this case it is not efficient
 to allocate memory for all those repetitive byte sequences. It is advisable to turn prefixed keys mode on, in order
 to have a dedicated map implementation being used (based on [Patricia Trie](http://en.wikipedia.org/wiki/Radix_tree))
+that keeps data in a tree manner so that common parts of keys are reused vs allocated separately
 * Passivation - if we maintain multiple Bytecask instances (say per user) and some of them are not being used it may
 not be critical to keep all indexes in memory. Passivation puts an instance "on hold", to be activated later, what means
 index will have to be reread to memory. This may improve overall resources management/scalabilty at the price of
