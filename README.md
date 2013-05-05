@@ -136,8 +136,9 @@ not be critical to keep all indexes in memory. Passivation puts an instance "on 
 index will have to be re-read to memory. This may improve overall resources management/scalabilty at the price of
 occasional activation.
 * Blob store - internal architecture has inherent limitation as to the value size as it is internally represented as
-an array of bytes. It means that blobs (files included) cannot be easily stored. The blob store function breaks blob
-value to down to segments so that multiple segments (plus a descriptor entry) altogether hold the value.
+an array of bytes. It means that blobs (files included) cannot be easily stored. The blob store function of the API
+breaks blob's value down to segments so that multiple segments (plus a descriptor entry) altogether hold the value.
+Storing and retrieving relys on streams rather than on values as the value by definition is large.
 * Eviction/Expiration - eviction is a mechanism to manage which entries should be removed, expiration is removal based
 on time.
 ### Benchmark ####
