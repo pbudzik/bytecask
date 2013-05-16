@@ -191,6 +191,10 @@ and issue:
 
     bin/benchmark.sh
 
+or from withing sbt:
+
+    run-main com.github.bytecask.Benchmark
+
 ### Collaboration ###
 
 **Reporting bugs and asking for features**
