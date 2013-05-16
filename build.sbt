@@ -31,6 +31,10 @@ scalacOptions ++= Seq(
   "-encoding", "utf8"
 )
 
+fork in run := true
+
+javaOptions in run += "-Droot-level=OFF -XX:+TieredCompilation -XX:+AggressiveOpts -server -Xmx512M -Xss2M"
+
 javacOptions ++= Seq("-source", "1.7")
 
 publishTo <<= (version) { version: String =>
